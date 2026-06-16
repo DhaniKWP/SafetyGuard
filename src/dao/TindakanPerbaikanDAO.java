@@ -9,39 +9,39 @@ import com.google.gson.reflect.TypeToken;
 import helper.SupabaseClient;
 import java.lang.reflect.Type;
 import java.util.List;
-import model.LaporanInsiden;
+import model.TindakanPerbaikan;
 
 /**
  *
  * @author macbook
  */
-public class LaporanInsidenDAO {
+public class TindakanPerbaikanDAO {
     private final Gson gson = new Gson();
-    public List<LaporanInsiden> getAll() {
+    public List<TindakanPerbaikan> getAll() {
         try {
-            String jsonResponse = SupabaseClient.get("/laporan_insiden");
-            Type listType = new TypeToken<List<LaporanInsiden>>() {}.getType();
+            String jsonResponse = SupabaseClient.get("/tindakan_perbaikan");
+            Type listType = new TypeToken<List<TindakanPerbaikan>>() {}.getType();
             return gson.fromJson(jsonResponse, listType);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-    public boolean insert(LaporanInsiden insiden) {
+    public boolean insert(TindakanPerbaikan tindakan) {
         try {
-            insiden.setIdInsiden(null);
-            String jsonPayload = gson.toJson(insiden);
-            return SupabaseClient.post("/laporan_insiden", jsonPayload);
+            tindakan.setIdTindakan(null); // Biar di-generate otomatis oleh Supabase
+            String jsonPayload = gson.toJson(tindakan);
+            return SupabaseClient.post("/tindakan_perbaikan", jsonPayload);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
-    public boolean update(LaporanInsiden insiden) {
+    public boolean update(TindakanPerbaikan tindakan) {
         try {
-            String id = insiden.getIdInsiden();
-            String jsonPayload = gson.toJson(insiden);
-            String endpoint = "/laporan_insiden?id_insiden=eq." + id;
+            String id = tindakan.getIdTindakan();
+            String jsonPayload = gson.toJson(tindakan);
+            String endpoint = "/tindakan_perbaikan?id_tindakan=eq." + id;
             return SupabaseClient.patch(endpoint, jsonPayload);
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,7 +50,7 @@ public class LaporanInsidenDAO {
     }
     public boolean delete(String id) {
         try {
-            String endpoint = "/laporan_insiden?id_insiden=eq." + id;
+            String endpoint = "/tindakan_perbaikan?id_tindakan=eq." + id;
             return SupabaseClient.delete(endpoint);
         } catch (Exception e) {
             e.printStackTrace();
