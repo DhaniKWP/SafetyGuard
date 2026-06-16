@@ -1,0 +1,36 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+# Kita abaikan library agar repository tidak berat, tapi pastikan file JAR Anda disimpan di folder khusus (misal 'lib') jika ingin dicommit.
+# Jika Anda meletakkan file JAR di folder 'lib/' dan ingin tetap di-commit, hapus rule *.jar di bawah.
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# NetBeans specific #
+/build/
+/nbproject/private/
+/dist/
+/nbbuild/
+/nb-configuration.xml
+
+# Operating System Files #
+.DS_Store
+Thumbs.db
