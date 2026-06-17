@@ -11,303 +11,255 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class PanelApd extends JPanel {
+public class PanelApd extends PanelBase {
+
+    private static final Color ACCENT = new Color(168, 85, 247); // Ungu
+
     private Pengguna loggedInUser;
-    private JTable tblApd;
     private DefaultTableModel modelApd;
-    private JButton btnFetchApd, btnTambahApd;
     private List<DistribusiAPD> listApd;
     private List<Karyawan> listKaryawan;
 
     public PanelApd(Pengguna user) {
+        super(ACCENT,
+              "Distribusi APD",
+              "Rekap penyaluran Alat Pelindung Diri kepada seluruh karyawan");
         this.loggedInUser = user;
-        setLayout(new BorderLayout());
-        initUI();
+        initTableModel();
+        initFilterBar();
+        initActionBar();
         fetchDataApd();
     }
 
-    private void initUI() {
+    private void initTableModel() {
         modelApd = new DefaultTableModel(new String[]{
             "No", "Nama Penerima", "Jenis APD", "Tanggal Distribusi", "Jumlah", "Kondisi APD"
         }, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        tblApd = new JTable(modelApd);
-        tblApd.addMouseListener(new java.awt.event.MouseAdapter() {
+        mainTable.setModel(modelApd);
+        int[] widths = {40, 200, 160, 120, 70, 100};
+        for (int i = 0; i < widths.length; i++) mainTable.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+
+        mainTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2 && tblApd.getSelectedRow() != -1) {
-                    showFormEditApd();
+                if (e.getClickCount() == 2 && mainTable.getSelectedRow() != -1) showFormEditApd();
+            }
+        });
+
+        javax.swing.table.TableRowSorter<DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(modelApd);
+        mainTable.setRowSorter(sorter);
+
+        // Renderer kondisi APD
+        mainTable.getColumnModel().getColumn(5).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
+                lbl.setText("  " + (v == null ? "" : v.toString()) + "  ");
+                lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+                lbl.setOpaque(true);
+                if (!sel) {
+                    String val = v == null ? "" : v.toString();
+                    switch (val) {
+                        case "Baru"        -> { lbl.setBackground(new Color(16, 185, 129, 40)); lbl.setForeground(new Color(52, 211, 153)); }
+                        case "Bekas Layak" -> { lbl.setBackground(new Color(245, 158, 11, 40)); lbl.setForeground(new Color(251, 191, 36)); }
+                        case "Rusak"       -> { lbl.setBackground(new Color(239, 68, 68, 40));  lbl.setForeground(new Color(252, 165, 165)); }
+                        default            -> { lbl.setBackground(new Color(30, 41, 59)); lbl.setForeground(new Color(148, 163, 184)); }
+                    }
                 }
+                return lbl;
             }
         });
+    }
 
-        javax.swing.table.TableRowSorter<DefaultTableModel> sorterApd = new javax.swing.table.TableRowSorter<>(modelApd);
-        tblApd.setRowSorter(sorterApd);
-
-        JPanel filterPanelApd = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterPanelApd.add(new JLabel("Cari:"));
-        JTextField txtSearchApd = new JTextField(15);
-        filterPanelApd.add(txtSearchApd);
-        filterPanelApd.add(new JLabel(" Jenis APD:"));
-        JComboBox<String> cbFilterJenisApd = new JComboBox<>(new String[]{
-            "Semua", "Helm Keselamatan", "Sepatu Safety", "Kacamata Pelindung", "Sarung Tangan", "Rompi Reflektif", "Masker/Respirator"
+    private void initFilterBar() {
+        JTextField txtSearch = styledSearch("Cari nama penerima, jenis APD...");
+        JComboBox<String> cbJenis = styledCombo(new String[]{
+            "Semua Jenis", "Helm Keselamatan", "Sepatu Safety", "Kacamata Pelindung",
+            "Sarung Tangan", "Rompi Reflektif", "Masker/Respirator"
         });
-        filterPanelApd.add(cbFilterJenisApd);
-        add(filterPanelApd, BorderLayout.NORTH);
+        JComboBox<String> cbKondisi = styledCombo(new String[]{"Semua Kondisi", "Baru", "Bekas Layak", "Rusak"});
 
-        Runnable filterApd = () -> {
-            String text = txtSearchApd.getText().trim();
-            String jenis = cbFilterJenisApd.getSelectedItem().toString();
-            java.util.List<javax.swing.RowFilter<Object,Object>> filters = new java.util.ArrayList<>(2);
-            if (!text.isEmpty()) {
-                filters.add(javax.swing.RowFilter.regexFilter("(?i)" + text));
-            }
-            if (!jenis.equals("Semua")) {
-                filters.add(javax.swing.RowFilter.regexFilter("^" + jenis + "$", 2)); // 2 is index of Jenis APD
-            }
-            sorterApd.setRowFilter(javax.swing.RowFilter.andFilter(filters));
+        filterBar.add(filterLabel("Cari:"));
+        filterBar.add(txtSearch);
+        filterBar.add(Box.createHorizontalStrut(8));
+        filterBar.add(filterLabel("Jenis APD:"));
+        filterBar.add(cbJenis);
+        filterBar.add(Box.createHorizontalStrut(8));
+        filterBar.add(filterLabel("Kondisi:"));
+        filterBar.add(cbKondisi);
+
+        javax.swing.table.TableRowSorter<DefaultTableModel> sorter =
+            (javax.swing.table.TableRowSorter<DefaultTableModel>) mainTable.getRowSorter();
+
+        Runnable applyFilter = () -> {
+            String txt    = txtSearch.getText().trim();
+            String jenis  = cbJenis.getSelectedItem().toString();
+            String kondisi= cbKondisi.getSelectedItem().toString();
+            java.util.List<javax.swing.RowFilter<Object,Object>> filters = new java.util.ArrayList<>();
+            if (!txt.isEmpty()) filters.add(javax.swing.RowFilter.regexFilter("(?i)" + txt));
+            if (!jenis.equals("Semua Jenis")) filters.add(javax.swing.RowFilter.regexFilter("^" + jenis + "$", 2));
+            if (!kondisi.equals("Semua Kondisi")) filters.add(javax.swing.RowFilter.regexFilter("^" + kondisi + "$", 5));
+            sorter.setRowFilter(filters.isEmpty() ? null : javax.swing.RowFilter.andFilter(filters));
         };
-
-        txtSearchApd.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filterApd.run(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filterApd.run(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filterApd.run(); }
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
         });
-        cbFilterJenisApd.addActionListener(e -> filterApd.run());
+        cbJenis.addActionListener(e -> applyFilter.run());
+        cbKondisi.addActionListener(e -> applyFilter.run());
+    }
 
-        add(new JScrollPane(tblApd), BorderLayout.CENTER);
-
-        JPanel btnPanelApd = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        btnFetchApd = new JButton("Refresh Data");
-        btnTambahApd = new JButton("Tambah Distribusi APD");
-        JButton btnHapusApd = new JButton("Hapus Terpilih");
-        btnPanelApd.add(btnFetchApd);
-        btnPanelApd.add(btnTambahApd);
-        btnPanelApd.add(btnHapusApd);
+    private void initActionBar() {
+        JButton btnRefresh = actionButton("Refresh", new Color(51, 65, 85), new Color(30, 41, 59));
+        JButton btnTambah  = actionButton("Tambah Distribusi", ACCENT_BLUE, ACCENT_CYAN);
+        JButton btnHapus   = actionButton("Hapus Terpilih", ACCENT_RED, new Color(185, 28, 28));
 
         if (loggedInUser.getPeran().equalsIgnoreCase("Karyawan")) {
-            btnTambahApd.setEnabled(false);
-            btnTambahApd.setToolTipText("Hanya Staff HSE/Admin yang bisa distribusi APD.");
+            btnTambah.setEnabled(false); btnTambah.setToolTipText("Hanya Staff HSE/Admin yang bisa distribusi APD.");
         }
         if (!loggedInUser.getPeran().equalsIgnoreCase("Admin")) {
-            btnHapusApd.setEnabled(false);
-            btnHapusApd.setToolTipText("Hanya Admin yang bisa menghapus data APD.");
+            btnHapus.setEnabled(false); btnHapus.setToolTipText("Hanya Admin yang dapat menghapus data.");
         }
 
-        add(btnPanelApd, BorderLayout.SOUTH);
-        btnFetchApd.addActionListener(e -> fetchDataApd());
-        btnTambahApd.addActionListener(e -> showFormTambahApd());
-        btnHapusApd.addActionListener(e -> hapusApdTerpilih());
+        actionBar.add(btnRefresh); actionBar.add(btnTambah); actionBar.add(btnHapus);
+        btnRefresh.addActionListener(e -> fetchDataApd());
+        btnTambah.addActionListener(e -> showFormTambahApd());
+        btnHapus.addActionListener(e -> hapusApdTerpilih());
     }
 
     private void fetchDataApd() {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            if (listKaryawan == null) {
-                listKaryawan = new KaryawanDAO().getAll();
-            }
-
-            DistribusiAPDDAO dao = new DistribusiAPDDAO();
-            listApd = dao.getAll();
+            if (listKaryawan == null) listKaryawan = new KaryawanDAO().getAll();
+            listApd = new DistribusiAPDDAO().getAll();
             modelApd.setRowCount(0);
-            if (listApd != null && !listApd.isEmpty()) {
+            if (listApd != null) {
                 int no = 1;
                 for (DistribusiAPD apd : listApd) {
-
-                    String infoPenerima = apd.getIdKaryawan();
-                    if (listKaryawan != null && apd.getIdKaryawan() != null) {
-                        for (Karyawan k : listKaryawan) {
-                            if (apd.getIdKaryawan().equals(k.getIdKaryawan())) {
-                                infoPenerima = k.getNamaLengkap() + " (" + k.getJabatan() + " - " + k.getDepartemen() + ")";
-                                break;
-                            }
+                    String penerima = apd.getIdKaryawan();
+                    if (listKaryawan != null) for (Karyawan k : listKaryawan)
+                        if (apd.getIdKaryawan() != null && apd.getIdKaryawan().equals(k.getIdKaryawan())) {
+                            penerima = k.getNamaLengkap() + " (" + k.getJabatan() + " - " + k.getDepartemen() + ")"; break;
                         }
-                    }
-
                     modelApd.addRow(new Object[]{
-                        no++,
-                        infoPenerima,
-                        apd.getJenisApd(),
-                        apd.getTanggalPembagian(),
-                        apd.getJumlah(),
-                        apd.getKondisiApd()
+                        no++, penerima, apd.getJenisApd(), apd.getTanggalPembagian(), apd.getJumlah(), apd.getKondisiApd()
                     });
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            setCursor(Cursor.getDefaultCursor());
-        }
+        } catch (Exception e) { e.printStackTrace(); }
+        finally { setCursor(Cursor.getDefaultCursor()); }
     }
 
     private void showFormTambahApd() {
-        if (this.listKaryawan == null) {
-            this.listKaryawan = new KaryawanDAO().getAll();
-        }
+        if (listKaryawan == null) listKaryawan = new KaryawanDAO().getAll();
         JComboBox<Karyawan> cbKaryawan = new JComboBox<>();
-        if (this.listKaryawan != null) {
-            for (Karyawan k : this.listKaryawan) {
-                cbKaryawan.addItem(k);
-            }
-        }
+        if (listKaryawan != null) for (Karyawan k : listKaryawan) cbKaryawan.addItem(k);
 
-        JComboBox<String> cbJenisApd = new JComboBox<>(new String[]{
-            "Helm Keselamatan", "Sepatu Safety", "Kacamata Pelindung", "Sarung Tangan", "Rompi Reflektif", "Masker/Respirator"
+        JComboBox<String> cbJenis = new JComboBox<>(new String[]{
+            "Helm Keselamatan","Sepatu Safety","Kacamata Pelindung","Sarung Tangan","Rompi Reflektif","Masker/Respirator"
         });
-
-        JPanel panelTanggal = new JPanel(new BorderLayout());
-        JTextField txtTanggal = new JTextField();
-        txtTanggal.setEditable(false);
-        JButton btnPilihTanggal = new JButton("Pilih Tanggal");
-        btnPilihTanggal.addActionListener(e -> {
-            Window parentWindow = SwingUtilities.getWindowAncestor(this);
-            String picked = new helper.DatePicker(parentWindow instanceof JFrame ? (JFrame)parentWindow : null).setPickedDate();
-            if (picked != null && !picked.trim().isEmpty()) {
-                txtTanggal.setText(picked);
-            }
+        JTextField txtTanggal = new JTextField(); txtTanggal.setEditable(false);
+        JButton btnPilih = new JButton("Pilih Tanggal");
+        btnPilih.addActionListener(e -> {
+            Window pw = SwingUtilities.getWindowAncestor(this);
+            String p = new helper.DatePicker(pw instanceof JFrame ? (JFrame)pw : null).setPickedDate();
+            if (p != null && !p.isEmpty()) txtTanggal.setText(p);
         });
-        panelTanggal.add(txtTanggal, BorderLayout.CENTER);
-        panelTanggal.add(btnPilihTanggal, BorderLayout.EAST);
+        JPanel pTanggal = new JPanel(new BorderLayout());
+        pTanggal.add(txtTanggal, BorderLayout.CENTER); pTanggal.add(btnPilih, BorderLayout.EAST);
 
-        JSpinner spinJumlah = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
-        JComboBox<String> cbKondisi = new JComboBox<>(new String[]{"Baru", "Bekas Layak", "Rusak"});
+        JSpinner spinJumlah = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        JComboBox<String> cbKondisi = new JComboBox<>(new String[]{"Baru","Bekas Layak","Rusak"});
 
-        Object[] message = {
-            "Karyawan Penerima:", cbKaryawan,
-            "Jenis APD:", cbJenisApd,
-            "Tanggal Distribusi:", panelTanggal,
-            "Jumlah:", spinJumlah,
-            "Kondisi APD:", cbKondisi
-        };
+        JPanel formPanel = createGridForm(
+            new String[]{"Karyawan Penerima", "Jenis APD", "Tanggal Distribusi", "Jumlah (pcs)", "Kondisi APD"},
+            new JComponent[]{cbKaryawan, cbJenis, pTanggal, spinJumlah, cbKondisi}
+        );
 
-        int option = JOptionPane.showConfirmDialog(this, message, "Distribusi APD Baru", JOptionPane.OK_CANCEL_OPTION);
-        if (option == JOptionPane.OK_OPTION) {
+        int opt = JOptionPane.showConfirmDialog(this, formPanel, "Distribusi APD Baru", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (opt == JOptionPane.OK_OPTION) {
             DistribusiAPD apd = new DistribusiAPD();
-
-            Karyawan selectedK = (Karyawan) cbKaryawan.getSelectedItem();
-            if (selectedK != null) {
-                apd.setIdKaryawan(selectedK.getIdKaryawan());
-            }
-
-            apd.setJenisApd((String) cbJenisApd.getSelectedItem());
+            Karyawan k = (Karyawan) cbKaryawan.getSelectedItem();
+            if (k != null) apd.setIdKaryawan(k.getIdKaryawan());
+            apd.setJenisApd((String) cbJenis.getSelectedItem());
             apd.setTanggalPembagian(txtTanggal.getText().trim());
             apd.setJumlah((Integer) spinJumlah.getValue());
             apd.setKondisiApd((String) cbKondisi.getSelectedItem());
-
-            DistribusiAPDDAO dao = new DistribusiAPDDAO();
-            if (dao.insert(apd)) {
+            if (new DistribusiAPDDAO().insert(apd)) {
                 JOptionPane.showMessageDialog(this, "Distribusi APD berhasil dicatat!");
                 fetchDataApd();
             } else {
-                JOptionPane.showMessageDialog(this, "Gagal menyimpan data distribusi APD.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private void hapusApdTerpilih() {
-        int[] selectedRows = tblApd.getSelectedRows();
-        if (selectedRows.length == 0) {
-            JOptionPane.showMessageDialog(this, "Pilih minimal satu data Distribusi APD untuk dihapus!");
-            return;
-        }
-
-        int option = JOptionPane.showConfirmDialog(this, "Yakin ingin menghapus " + selectedRows.length + " data Distribusi APD terpilih?", "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION);
-        if (option == JOptionPane.YES_OPTION) {
-            DistribusiAPDDAO dao = new DistribusiAPDDAO();
-            boolean success = true;
-            for (int i = selectedRows.length - 1; i >= 0; i--) {
-                int row = tblApd.convertRowIndexToModel(selectedRows[i]);
-                String id = listApd.get(row).getIdDistribusi();
-                if (!dao.delete(id)) {
-                    success = false;
-                }
-            }
-            fetchDataApd();
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Data Distribusi APD berhasil dihapus.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Gagal menghapus beberapa data Distribusi APD.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan data.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
     private void showFormEditApd() {
-        int selectedRow = tblApd.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Pilih data Distribusi APD yang ingin diedit!");
-            return;
-        }
-
-        int modelRow = tblApd.convertRowIndexToModel(selectedRow);
+        int sel = mainTable.getSelectedRow();
+        if (sel < 0) return;
+        int modelRow = mainTable.convertRowIndexToModel(sel);
         DistribusiAPD apd = listApd.get(modelRow);
+        if (listKaryawan == null) listKaryawan = new KaryawanDAO().getAll();
 
-        if (this.listKaryawan == null) {
-            this.listKaryawan = new KaryawanDAO().getAll();
-        }
         JComboBox<Karyawan> cbKaryawan = new JComboBox<>();
-        if (this.listKaryawan != null) {
-            for (Karyawan k : this.listKaryawan) {
-                cbKaryawan.addItem(k);
-                if (k.getIdKaryawan().equals(apd.getIdKaryawan())) {
-                    cbKaryawan.setSelectedItem(k);
-                }
-            }
+        if (listKaryawan != null) for (Karyawan k : listKaryawan) {
+            cbKaryawan.addItem(k);
+            if (k.getIdKaryawan().equals(apd.getIdKaryawan())) cbKaryawan.setSelectedItem(k);
         }
-
-        JComboBox<String> cbJenisApd = new JComboBox<>(new String[]{
-            "Helm Keselamatan", "Sepatu Safety", "Kacamata Pelindung", "Sarung Tangan", "Rompi Reflektif", "Masker/Respirator"
+        JComboBox<String> cbJenis = new JComboBox<>(new String[]{
+            "Helm Keselamatan","Sepatu Safety","Kacamata Pelindung","Sarung Tangan","Rompi Reflektif","Masker/Respirator"
         });
-        cbJenisApd.setSelectedItem(apd.getJenisApd());
+        cbJenis.setSelectedItem(apd.getJenisApd());
 
-        JPanel panelTanggal = new JPanel(new BorderLayout());
-        JTextField txtTanggal = new JTextField(apd.getTanggalPembagian());
-        txtTanggal.setEditable(false);
-        JButton btnPilihTanggal = new JButton("Pilih Tanggal");
-        btnPilihTanggal.addActionListener(e -> {
-            Window parentWindow = SwingUtilities.getWindowAncestor(this);
-            String picked = new helper.DatePicker(parentWindow instanceof JFrame ? (JFrame)parentWindow : null).setPickedDate();
-            if (picked != null && !picked.trim().isEmpty()) {
-                txtTanggal.setText(picked);
-            }
+        JTextField txtTanggal = new JTextField(apd.getTanggalPembagian()); txtTanggal.setEditable(false);
+        JButton btnPilih = new JButton("Pilih");
+        btnPilih.addActionListener(e -> {
+            Window pw = SwingUtilities.getWindowAncestor(this);
+            String p = new helper.DatePicker(pw instanceof JFrame ? (JFrame)pw : null).setPickedDate();
+            if (p != null && !p.isEmpty()) txtTanggal.setText(p);
         });
-        panelTanggal.add(txtTanggal, BorderLayout.CENTER);
-        panelTanggal.add(btnPilihTanggal, BorderLayout.EAST);
+        JPanel pTanggal = new JPanel(new BorderLayout());
+        pTanggal.add(txtTanggal, BorderLayout.CENTER); pTanggal.add(btnPilih, BorderLayout.EAST);
 
-        JSpinner spinJumlah = new JSpinner(new SpinnerNumberModel((int)apd.getJumlah(), 1, 10, 1));
-        JComboBox<String> cbKondisi = new JComboBox<>(new String[]{"Baru", "Bekas Layak", "Rusak"});
+        JSpinner spinJumlah = new JSpinner(new SpinnerNumberModel((int)apd.getJumlah(), 1, 100, 1));
+        JComboBox<String> cbKondisi = new JComboBox<>(new String[]{"Baru","Bekas Layak","Rusak"});
         cbKondisi.setSelectedItem(apd.getKondisiApd());
 
-        Object[] message = {
-            "Karyawan Penerima:", cbKaryawan,
-            "Jenis APD:", cbJenisApd,
-            "Tanggal Distribusi:", panelTanggal,
-            "Jumlah:", spinJumlah,
-            "Kondisi APD:", cbKondisi
-        };
+        JPanel formPanel = createGridForm(
+            new String[]{"Karyawan Penerima", "Jenis APD", "Tanggal Distribusi", "Jumlah (pcs)", "Kondisi APD"},
+            new JComponent[]{cbKaryawan, cbJenis, pTanggal, spinJumlah, cbKondisi}
+        );
 
-        int option = JOptionPane.showConfirmDialog(this, message, "Edit Distribusi APD", JOptionPane.OK_CANCEL_OPTION);
-        if (option == JOptionPane.OK_OPTION) {
-            Karyawan selectedK = (Karyawan) cbKaryawan.getSelectedItem();
-            if (selectedK != null) {
-                apd.setIdKaryawan(selectedK.getIdKaryawan());
-            }
+        int opt = JOptionPane.showConfirmDialog(this, formPanel, "Edit Distribusi APD", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-            apd.setJenisApd((String) cbJenisApd.getSelectedItem());
+        if (opt == JOptionPane.OK_OPTION) {
+            Karyawan k = (Karyawan) cbKaryawan.getSelectedItem();
+            if (k != null) apd.setIdKaryawan(k.getIdKaryawan());
+            apd.setJenisApd((String) cbJenis.getSelectedItem());
             apd.setTanggalPembagian(txtTanggal.getText().trim());
             apd.setJumlah((Integer) spinJumlah.getValue());
             apd.setKondisiApd((String) cbKondisi.getSelectedItem());
-
-            DistribusiAPDDAO dao = new DistribusiAPDDAO();
-            if (dao.update(apd)) {
-                JOptionPane.showMessageDialog(this, "Data Distribusi APD berhasil diupdate!");
+            if (new DistribusiAPDDAO().update(apd)) {
+                JOptionPane.showMessageDialog(this, "Data APD berhasil diperbarui!");
                 fetchDataApd();
             } else {
-                JOptionPane.showMessageDialog(this, "Gagal mengupdate data distribusi APD.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Gagal mengupdate data.", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    private void hapusApdTerpilih() {
+        int[] rows = mainTable.getSelectedRows();
+        if (rows.length == 0) { JOptionPane.showMessageDialog(this, "Pilih data terlebih dahulu!"); return; }
+        if (JOptionPane.showConfirmDialog(this, "Hapus " + rows.length + " data Distribusi APD?", "Konfirmasi", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            DistribusiAPDDAO dao = new DistribusiAPDDAO();
+            boolean ok = true;
+            for (int i = rows.length - 1; i >= 0; i--)
+                if (!dao.delete(listApd.get(mainTable.convertRowIndexToModel(rows[i])).getIdDistribusi())) ok = false;
+            fetchDataApd();
+            JOptionPane.showMessageDialog(this, ok ? "Data berhasil dihapus." : "Beberapa data gagal dihapus.");
         }
     }
 }

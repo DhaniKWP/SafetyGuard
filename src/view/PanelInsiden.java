@@ -9,110 +9,116 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class PanelInsiden extends JPanel {
+public class PanelInsiden extends PanelBase {
+
+    private static final Color ACCENT = new Color(239, 68, 68); // Merah
+
     private Pengguna loggedInUser;
-    private JTable tblInsiden;
     private DefaultTableModel modelInsiden;
-    private JButton btnFetchInsiden, btnTambahInsiden, btnHapusInsiden;
     private List<LaporanInsiden> listInsiden;
 
     public PanelInsiden(Pengguna user) {
+        super(ACCENT,
+              "Laporan Insiden K3",
+              "Data kejadian insiden keselamatan kerja di lingkungan pabrik");
         this.loggedInUser = user;
-        setLayout(new BorderLayout());
-        initUI();
+        initTableModel();
+        initFilterBar();
+        initActionBar();
         fetchDataInsiden();
     }
 
-    private void initUI() {
+    private void initTableModel() {
         modelInsiden = new DefaultTableModel(new String[]{
-            "No", "Tanggal", "Lokasi", "Kategori", "Deskripsi", "Status Investigasi"
+            "No", "Tanggal Kejadian", "Lokasi", "Kategori", "Deskripsi", "Status Investigasi"
         }, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        tblInsiden = new JTable(modelInsiden);
-        tblInsiden.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2 && tblInsiden.getSelectedRow() != -1) {
-                    showFormEditInsiden();
-                }
-            }
-        });
+        mainTable.setModel(modelInsiden);
 
-        javax.swing.table.TableRowSorter<DefaultTableModel> sorterInsiden = new javax.swing.table.TableRowSorter<>(modelInsiden);
-        tblInsiden.setRowSorter(sorterInsiden);
-
-        JPanel filterPanelInsiden = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterPanelInsiden.add(new JLabel("Cari:"));
-        JTextField txtSearchInsiden = new JTextField(15);
-        filterPanelInsiden.add(txtSearchInsiden);
-        filterPanelInsiden.add(new JLabel(" Kategori:"));
-        JComboBox<String> cbFilterKategoriInsiden = new JComboBox<>(new String[]{
-            "Semua", "Near Miss", "Minor Injury", "Major Injury", "Property Damage"
-        });
-        filterPanelInsiden.add(cbFilterKategoriInsiden);
-        add(filterPanelInsiden, BorderLayout.NORTH);
-
-        Runnable filterInsiden = () -> {
-            String text = txtSearchInsiden.getText().trim();
-            String kategori = cbFilterKategoriInsiden.getSelectedItem().toString();
-            java.util.List<javax.swing.RowFilter<Object,Object>> filters = new java.util.ArrayList<>(2);
-            if (!text.isEmpty()) {
-                filters.add(javax.swing.RowFilter.regexFilter("(?i)" + text));
-            }
-            if (!kategori.equals("Semua")) {
-                filters.add(javax.swing.RowFilter.regexFilter("^" + kategori + "$", 3)); // 3 is index of Kategori
-            }
-            sorterInsiden.setRowFilter(javax.swing.RowFilter.andFilter(filters));
-        };
-
-        txtSearchInsiden.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filterInsiden.run(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filterInsiden.run(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filterInsiden.run(); }
-        });
-        cbFilterKategoriInsiden.addActionListener(e -> filterInsiden.run());
-
-        JScrollPane scrollPane = new JScrollPane(tblInsiden);
-        add(scrollPane, BorderLayout.CENTER);
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        btnFetchInsiden = new JButton("Refresh Data");
-        btnTambahInsiden = new JButton("Tambah Insiden Baru");
-        btnHapusInsiden = new JButton("Hapus Terpilih");
-        buttonPanel.add(btnFetchInsiden);
-        buttonPanel.add(btnTambahInsiden);
-        buttonPanel.add(btnHapusInsiden);
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        if (!loggedInUser.getPeran().equalsIgnoreCase("Admin")) {
-            btnHapusInsiden.setEnabled(false);
-            btnHapusInsiden.setToolTipText("Hanya Admin yang memiliki hak untuk menghapus data.");
+        // Lebar kolom
+        int[] widths = {45, 110, 130, 120, 260, 130};
+        for (int i = 0; i < widths.length; i++) {
+            mainTable.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
 
-        btnFetchInsiden.addActionListener(e -> fetchDataInsiden());
-        btnTambahInsiden.addActionListener(e -> showFormTambahInsiden());
-        btnHapusInsiden.addActionListener(e -> hapusInsidenTerpilih());
+        // Double-click untuk edit
+        mainTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2 && mainTable.getSelectedRow() != -1) showFormEditInsiden();
+            }
+        });
+
+        // Row sorter
+        javax.swing.table.TableRowSorter<DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(modelInsiden);
+        mainTable.setRowSorter(sorter);
+
+        // Custom renderer untuk kolom Status dengan warna
+        mainTable.getColumnModel().getColumn(5).setCellRenderer(new StatusBadgeRenderer());
+    }
+
+    private void initFilterBar() {
+        JTextField txtSearch = styledSearch("Cari lokasi, deskripsi...");
+        JComboBox<String> cbKategori = styledCombo(new String[]{
+            "Semua Kategori", "Near Miss", "Minor Injury", "Major Injury", "Property Damage"
+        });
+
+        filterBar.add(filterLabel("Cari:"));
+        filterBar.add(txtSearch);
+        filterBar.add(Box.createHorizontalStrut(8));
+        filterBar.add(filterLabel("Kategori:"));
+        filterBar.add(cbKategori);
+
+        javax.swing.table.TableRowSorter<DefaultTableModel> sorter =
+            (javax.swing.table.TableRowSorter<DefaultTableModel>) mainTable.getRowSorter();
+
+        Runnable applyFilter = () -> {
+            String txt = txtSearch.getText().trim();
+            String kat = cbKategori.getSelectedItem().toString();
+            java.util.List<javax.swing.RowFilter<Object, Object>> filters = new java.util.ArrayList<>();
+            if (!txt.isEmpty()) filters.add(javax.swing.RowFilter.regexFilter("(?i)" + txt));
+            if (!kat.equals("Semua Kategori")) filters.add(javax.swing.RowFilter.regexFilter("^" + kat + "$", 3));
+            sorter.setRowFilter(filters.isEmpty() ? null : javax.swing.RowFilter.andFilter(filters));
+        };
+
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
+        });
+        cbKategori.addActionListener(e -> applyFilter.run());
+    }
+
+    private void initActionBar() {
+        JButton btnRefresh = actionButton("Refresh", new Color(51, 65, 85), new Color(30, 41, 59));
+        JButton btnTambah  = actionButton("Tambah Insiden", ACCENT_BLUE, ACCENT_CYAN);
+        JButton btnHapus   = actionButton("Hapus Terpilih", ACCENT_RED, new Color(185, 28, 28));
+
+        if (!loggedInUser.getPeran().equalsIgnoreCase("Admin")) {
+            btnHapus.setEnabled(false);
+            btnHapus.setToolTipText("Hanya Admin yang dapat menghapus data.");
+        }
+
+        actionBar.add(btnRefresh);
+        actionBar.add(btnTambah);
+        actionBar.add(btnHapus);
+
+        btnRefresh.addActionListener(e -> fetchDataInsiden());
+        btnTambah.addActionListener(e -> showFormTambahInsiden());
+        btnHapus.addActionListener(e -> hapusInsidenTerpilih());
     }
 
     private void fetchDataInsiden() {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            LaporanInsidenDAO dao = new LaporanInsidenDAO();
-            listInsiden = dao.getAll();
+            listInsiden = new LaporanInsidenDAO().getAll();
             modelInsiden.setRowCount(0);
-            if (listInsiden != null && !listInsiden.isEmpty()) {
-                int noUrut = 1;
+            if (listInsiden != null) {
+                int no = 1;
                 for (LaporanInsiden ins : listInsiden) {
                     modelInsiden.addRow(new Object[]{
-                        noUrut++,
-                        ins.getTanggalKejadian(),
-                        ins.getLokasiKejadian(),
-                        ins.getKategoriInsiden(),
-                        ins.getDeskripsiKejadian(),
-                        ins.getStatusInvestigasi()
+                        no++, ins.getTanggalKejadian(), ins.getLokasiKejadian(),
+                        ins.getKategoriInsiden(), ins.getDeskripsiKejadian(), ins.getStatusInvestigasi()
                     });
                 }
             }
@@ -126,132 +132,129 @@ public class PanelInsiden extends JPanel {
 
     private void showFormTambahInsiden() {
         JTextField txtLokasi = new JTextField();
-        JComboBox<String> cbKategori = new JComboBox<>(new String[]{
-            "Near Miss", "Minor Injury", "Major Injury", "Property Damage"
-        });
+        JComboBox<String> cbKategori = new JComboBox<>(new String[]{"Near Miss","Minor Injury","Major Injury","Property Damage"});
         JTextArea txtDeskripsi = new JTextArea(4, 20);
-        JScrollPane scrollDesc = new JScrollPane(txtDeskripsi);
-        JTextField txtTanggal = new JTextField("2026-06-16");
+        txtDeskripsi.setLineWrap(true);
+        txtDeskripsi.setWrapStyleWord(true);
+        JTextField txtTanggal = new JTextField(java.time.LocalDate.now().toString());
         txtTanggal.setEditable(false);
-        JButton btnPilihTanggal = new JButton("Pilih...");
-        btnPilihTanggal.addActionListener(e -> {
-            Window parentWindow = SwingUtilities.getWindowAncestor(this);
-            String picked = new helper.DatePicker(parentWindow instanceof JFrame ? (JFrame)parentWindow : null).setPickedDate();
-            if (!picked.isEmpty()) txtTanggal.setText(picked);
+        JButton btnPilih = new JButton("Pilih...");
+        btnPilih.addActionListener(e -> {
+            Window pw = SwingUtilities.getWindowAncestor(this);
+            String p = new helper.DatePicker(pw instanceof JFrame ? (JFrame)pw : null).setPickedDate();
+            if (p != null && !p.isEmpty()) txtTanggal.setText(p);
         });
-        JPanel panelTanggal = new JPanel(new BorderLayout());
-        panelTanggal.add(txtTanggal, BorderLayout.CENTER);
-        panelTanggal.add(btnPilihTanggal, BorderLayout.EAST);
+        JPanel pTanggal = new JPanel(new BorderLayout(6, 0));
+        pTanggal.setOpaque(false);
+        pTanggal.add(txtTanggal, BorderLayout.CENTER);
+        pTanggal.add(btnPilih, BorderLayout.EAST);
 
-        Object[] message = {
-            "Tanggal Kejadian:", panelTanggal,
-            "Lokasi Kejadian:", txtLokasi,
-            "Kategori Insiden:", cbKategori,
-            "Deskripsi Kejadian:", scrollDesc
-        };
-        int option = JOptionPane.showConfirmDialog(this, message, "Tambah Laporan Insiden", JOptionPane.OK_CANCEL_OPTION);
-        if (option == JOptionPane.OK_OPTION) {
-            LaporanInsiden insiden = new LaporanInsiden();
-            insiden.setTanggalKejadian(txtTanggal.getText().trim());
-            insiden.setLokasiKejadian(txtLokasi.getText().trim());
-            insiden.setKategoriInsiden((String) cbKategori.getSelectedItem());
-            insiden.setDeskripsiKejadian(txtDeskripsi.getText().trim());
-            insiden.setIdPelapor(loggedInUser.getIdKaryawan());
-            insiden.setStatusInvestigasi("Baru");
-            LaporanInsidenDAO dao = new LaporanInsidenDAO();
-            if (dao.insert(insiden)) {
+        JPanel formPanel = createGridForm(
+            new String[]{"Tanggal Kejadian", "Lokasi", "Kategori Insiden", "Deskripsi Detail"},
+            new JComponent[]{pTanggal, txtLokasi, cbKategori, new JScrollPane(txtDeskripsi)}
+        );
+
+        int opt = JOptionPane.showConfirmDialog(this, formPanel, "Tambah Laporan Insiden", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (opt == JOptionPane.OK_OPTION) {
+            LaporanInsiden ins = new LaporanInsiden();
+            ins.setTanggalKejadian(txtTanggal.getText().trim());
+            ins.setLokasiKejadian(txtLokasi.getText().trim());
+            ins.setKategoriInsiden((String) cbKategori.getSelectedItem());
+            ins.setDeskripsiKejadian(txtDeskripsi.getText().trim());
+            ins.setIdPelapor(loggedInUser.getIdKaryawan());
+            ins.setStatusInvestigasi("Baru");
+            if (new LaporanInsidenDAO().insert(ins)) {
                 JOptionPane.showMessageDialog(this, "Insiden berhasil dilaporkan!");
                 fetchDataInsiden();
             } else {
-                JOptionPane.showMessageDialog(this, "Gagal menyimpan data ke database.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan data.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
     private void showFormEditInsiden() {
-        int selectedRow = tblInsiden.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Silakan pilih baris insiden yang ingin diedit.");
-            return;
-        }
+        int selRow = mainTable.getSelectedRow();
+        if (selRow == -1) return;
+        int modelRow = mainTable.convertRowIndexToModel(selRow);
+        LaporanInsiden ins = listInsiden.get(modelRow);
 
-        int modelRow = tblInsiden.convertRowIndexToModel(selectedRow);
-        LaporanInsiden insiden = listInsiden.get(modelRow);
-
-        JTextField txtLokasi = new JTextField(insiden.getLokasiKejadian());
-        JComboBox<String> cbKategori = new JComboBox<>(new String[]{
-            "Near Miss", "Minor Injury", "Major Injury", "Property Damage"
-        });
-        cbKategori.setSelectedItem(insiden.getKategoriInsiden());
-
+        JTextField txtLokasi = new JTextField(ins.getLokasiKejadian());
+        JComboBox<String> cbKategori = new JComboBox<>(new String[]{"Near Miss","Minor Injury","Major Injury","Property Damage"});
+        cbKategori.setSelectedItem(ins.getKategoriInsiden());
         JTextArea txtDeskripsi = new JTextArea(4, 20);
-        txtDeskripsi.setText(insiden.getDeskripsiKejadian());
-
-        JTextField txtTanggal = new JTextField(insiden.getTanggalKejadian());
+        txtDeskripsi.setLineWrap(true);
+        txtDeskripsi.setWrapStyleWord(true);
+        txtDeskripsi.setText(ins.getDeskripsiKejadian());
+        JTextField txtTanggal = new JTextField(ins.getTanggalKejadian());
         txtTanggal.setEditable(false);
-        JButton btnPilihTanggal = new JButton("Pilih...");
-        btnPilihTanggal.addActionListener(e -> {
-            Window parentWindow = SwingUtilities.getWindowAncestor(this);
-            String picked = new helper.DatePicker(parentWindow instanceof JFrame ? (JFrame)parentWindow : null).setPickedDate();
-            if (!picked.isEmpty()) txtTanggal.setText(picked);
+        JButton btnPilih = new JButton("Pilih...");
+        btnPilih.addActionListener(e -> {
+            Window pw = SwingUtilities.getWindowAncestor(this);
+            String p = new helper.DatePicker(pw instanceof JFrame ? (JFrame)pw : null).setPickedDate();
+            if (p != null && !p.isEmpty()) txtTanggal.setText(p);
         });
-        JPanel panelTanggal = new JPanel(new BorderLayout());
-        panelTanggal.add(txtTanggal, BorderLayout.CENTER);
-        panelTanggal.add(btnPilihTanggal, BorderLayout.EAST);
+        JPanel pTanggal = new JPanel(new BorderLayout(6, 0));
+        pTanggal.setOpaque(false);
+        pTanggal.add(txtTanggal, BorderLayout.CENTER);
+        pTanggal.add(btnPilih, BorderLayout.EAST);
+        JComboBox<String> cbStatus = new JComboBox<>(new String[]{"Baru","Sedang Diinvestigasi","Selesai"});
+        cbStatus.setSelectedItem(ins.getStatusInvestigasi());
 
-        JComboBox<String> cbStatus = new JComboBox<>(new String[]{"Baru", "Sedang Diinvestigasi", "Selesai"});
-        cbStatus.setSelectedItem(insiden.getStatusInvestigasi());
+        JPanel formPanel = createGridForm(
+            new String[]{"Tanggal Kejadian", "Lokasi", "Kategori Insiden", "Deskripsi Detail", "Status Investigasi"},
+            new JComponent[]{pTanggal, txtLokasi, cbKategori, new JScrollPane(txtDeskripsi), cbStatus}
+        );
 
-        Object[] message = {
-            "Tanggal Kejadian:", panelTanggal,
-            "Lokasi Kejadian:", txtLokasi,
-            "Kategori Insiden:", cbKategori,
-            "Deskripsi Kejadian:", new JScrollPane(txtDeskripsi),
-            "Status Investigasi:", cbStatus
-        };
+        int opt = JOptionPane.showConfirmDialog(this, formPanel, "Edit Laporan Insiden", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        int option = JOptionPane.showConfirmDialog(this, message, "Edit Laporan Insiden", JOptionPane.OK_CANCEL_OPTION);
-        if (option == JOptionPane.OK_OPTION) {
-            insiden.setTanggalKejadian(txtTanggal.getText().trim());
-            insiden.setLokasiKejadian(txtLokasi.getText().trim());
-            insiden.setKategoriInsiden((String) cbKategori.getSelectedItem());
-            insiden.setDeskripsiKejadian(txtDeskripsi.getText().trim());
-            insiden.setStatusInvestigasi((String) cbStatus.getSelectedItem());
-
-            LaporanInsidenDAO dao = new LaporanInsidenDAO();
-            if (dao.update(insiden)) {
+        if (opt == JOptionPane.OK_OPTION) {
+            ins.setTanggalKejadian(txtTanggal.getText().trim());
+            ins.setLokasiKejadian(txtLokasi.getText().trim());
+            ins.setKategoriInsiden((String) cbKategori.getSelectedItem());
+            ins.setDeskripsiKejadian(txtDeskripsi.getText().trim());
+            ins.setStatusInvestigasi((String) cbStatus.getSelectedItem());
+            if (new LaporanInsidenDAO().update(ins)) {
                 JOptionPane.showMessageDialog(this, "Data Insiden berhasil diperbarui!");
                 fetchDataInsiden();
             } else {
-                JOptionPane.showMessageDialog(this, "Gagal mengupdate data ke database.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Gagal mengupdate data.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private void hapusInsidenTerpilih() {
-        int[] selectedRows = tblInsiden.getSelectedRows();
-        if (selectedRows.length == 0) {
-            JOptionPane.showMessageDialog(this, "Pilih minimal satu data insiden untuk dihapus!");
-            return;
-        }
 
-        int option = JOptionPane.showConfirmDialog(this, "Yakin ingin menghapus " + selectedRows.length + " data insiden terpilih?", "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION);
-        if (option == JOptionPane.YES_OPTION) {
+
+    private void hapusInsidenTerpilih() {
+        int[] rows = mainTable.getSelectedRows();
+        if (rows.length == 0) { JOptionPane.showMessageDialog(this, "Pilih data terlebih dahulu!"); return; }
+        if (JOptionPane.showConfirmDialog(this, "Hapus " + rows.length + " data insiden?", "Konfirmasi", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             LaporanInsidenDAO dao = new LaporanInsidenDAO();
-            boolean success = true;
-            for (int i = selectedRows.length - 1; i >= 0; i--) {
-                int row = tblInsiden.convertRowIndexToModel(selectedRows[i]);
-                String id = listInsiden.get(row).getIdInsiden();
-                if (!dao.delete(id)) {
-                    success = false;
-                }
+            boolean ok = true;
+            for (int i = rows.length - 1; i >= 0; i--) {
+                if (!dao.delete(listInsiden.get(mainTable.convertRowIndexToModel(rows[i])).getIdInsiden())) ok = false;
             }
             fetchDataInsiden();
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Data Insiden berhasil dihapus.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Gagal menghapus beberapa data Insiden.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ok ? "Data berhasil dihapus." : "Beberapa data gagal dihapus.");
+        }
+    }
+
+    // Renderer badge warna untuk kolom Status
+    static class StatusBadgeRenderer extends javax.swing.table.DefaultTableCellRenderer {
+        @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+            JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
+            String val = v == null ? "" : v.toString();
+            lbl.setText("  " + val + "  ");
+            lbl.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            lbl.setOpaque(true);
+            if (!sel) {
+                switch (val) {
+                    case "Selesai"              -> { lbl.setBackground(new Color(16, 185, 129, 40)); lbl.setForeground(new Color(52, 211, 153)); }
+                    case "Sedang Diinvestigasi" -> { lbl.setBackground(new Color(245, 158, 11, 40)); lbl.setForeground(new Color(251, 191, 36)); }
+                    default                     -> { lbl.setBackground(new Color(239, 68, 68, 40));  lbl.setForeground(new Color(252, 165, 165)); }
+                }
             }
+            return lbl;
         }
     }
 }
