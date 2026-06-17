@@ -36,6 +36,6 @@ public class Karyawan {
     public void setSertifikasiK3(String sertifikasi_k3) { this.sertifikasi_k3 = sertifikasi_k3; }
     @Override
     public String toString() {
-        return nama_lengkap;
+        return nama_lengkap + " - " + jabatan + " (" + departemen + ")";
     }
 }

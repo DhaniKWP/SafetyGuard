@@ -57,18 +57,22 @@ public class SupabaseClient {
     }
     
     public static boolean patch(String endpointWithQuery, String jsonPayload) throws Exception {
-        URL obj = new URL(BASE_URL + endpointWithQuery);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        con.setRequestMethod("PATCH");
-        con.setRequestProperty("apikey", API_KEY);
-        con.setRequestProperty("Authorization", "Bearer " + API_KEY);
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setDoOutput(true);
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = jsonPayload.getBytes("utf-8");
-            os.write(input, 0, input.length);
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create(BASE_URL + endpointWithQuery))
+                .header("apikey", API_KEY)
+                .header("Authorization", "Bearer " + API_KEY)
+                .header("Content-Type", "application/json")
+                .method("PATCH", java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload))
+                .build();
+                
+        java.net.http.HttpResponse<String> response = java.net.http.HttpClient.newHttpClient()
+                .send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+                
+        int responseCode = response.statusCode();
+        if (responseCode >= 400) {
+            System.err.println("Supabase PATCH Error Code: " + responseCode);
+            System.err.println("Supabase Error Msg: " + response.body());
         }
-        int responseCode = con.getResponseCode();
         return (responseCode == 200 || responseCode == 204);
     }
 
