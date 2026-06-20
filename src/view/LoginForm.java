@@ -1,6 +1,6 @@
 package view;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import dao.PenggunaDAO;
 import model.Pengguna;
 
@@ -12,15 +12,15 @@ import java.awt.event.MouseEvent;
 
 public class LoginForm extends JFrame {
 
-    private static final Color BG_DARK      = new Color(13, 17, 28);
-    private static final Color BG_CARD      = new Color(22, 27, 45);
-    private static final Color ACCENT_BLUE  = new Color(59, 130, 246);
-    private static final Color ACCENT_CYAN  = new Color(34, 211, 238);
-    private static final Color BORDER_COLOR = new Color(51, 65, 85);
-    private static final Color TEXT_WHITE   = new Color(248, 250, 252);
-    private static final Color TEXT_MUTED   = new Color(148, 163, 184);
-    private static final Color INPUT_BG     = new Color(30, 41, 59);
-    private static final Color PROGRESS_BG  = new Color(30, 41, 59);
+    private static final Color BG_DARK      = new Color(241, 245, 249);
+    private static final Color BG_CARD      = new Color(255, 255, 255);
+    private static final Color ACCENT_BLUE  = new Color(37, 99, 235);
+    private static final Color ACCENT_CYAN  = new Color(59, 130, 246);
+    private static final Color BORDER_COLOR = new Color(203, 213, 225);
+    private static final Color TEXT_WHITE   = new Color(15, 23, 42); // Reused constant name, but it's dark text now
+    private static final Color TEXT_MUTED   = new Color(100, 116, 139);
+    private static final Color INPUT_BG     = new Color(248, 250, 252);
+    private static final Color PROGRESS_BG  = new Color(226, 232, 240);
 
     private JTextField     txtUsername;
     private JPasswordField txtPassword;
@@ -42,7 +42,7 @@ public class LoginForm extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g.create();
-                GradientPaint gp = new GradientPaint(0, 0, BG_DARK, getWidth(), getHeight(), new Color(15, 23, 42));
+                GradientPaint gp = new GradientPaint(0, 0, BG_DARK, getWidth(), getHeight(), new Color(226, 232, 240));
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 g2d.dispose();
@@ -60,7 +60,7 @@ public class LoginForm extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                GradientPaint gp = new GradientPaint(0, 0, new Color(30, 58, 138), getWidth(), getHeight(), new Color(17, 24, 39));
+                GradientPaint gp = new GradientPaint(0, 0, new Color(30, 58, 138), getWidth(), getHeight(), new Color(37, 99, 235));
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 // Lingkaran dekoratif
@@ -111,7 +111,7 @@ public class LoginForm extends JFrame {
         for (String f : features) {
             JLabel lbl = new JLabel("  - " + f);
             lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            lbl.setForeground(new Color(186, 230, 253));
+            lbl.setForeground(new Color(224, 242, 254));
             lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
             featuresPanel.add(lbl);
             featuresPanel.add(Box.createVerticalStrut(6));
@@ -397,7 +397,7 @@ public class LoginForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        try { FlatDarkLaf.setup(); } catch (Exception ex) { }
+        try { FlatLightLaf.setup(); } catch (Exception ex) { }
         SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }
 }

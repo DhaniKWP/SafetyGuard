@@ -1,6 +1,6 @@
 package view;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import model.Pengguna;
 
 import javax.swing.*;
@@ -19,9 +19,10 @@ public class DashboardFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // Inisialisasi Tabbed Pane & Background
-        getContentPane().setBackground(new Color(13, 18, 30)); // Warna BG_HEADER
+        getContentPane().setBackground(new Color(255, 255, 255)); // Warna BG_HEADER
+        
         tabbedPane = new JTabbedPane();
-        tabbedPane.setBackground(new Color(22, 27, 45)); // Warna BG_CARD untuk tab tidak aktif
+        tabbedPane.setBackground(new Color(241, 245, 249)); // Warna BG_CARD untuk tab tidak aktif
         tabbedPane.setOpaque(true);
 
         // Menyambungkan Panel-Panel Modular
@@ -59,10 +60,10 @@ public class DashboardFrame extends JFrame {
         // Footer Status Bar
         JPanel statusPanel = new JPanel(new BorderLayout());
         statusPanel.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        statusPanel.setBackground(new Color(15, 23, 42)); // Sama dengan BG_MAIN
-
-        JLabel lblStatus = new JLabel("Status: Terhubung ke database Supabase | Pengguna Aktif: " + user.getUsername());
-        lblStatus.setForeground(new Color(148, 163, 184)); // Sama dengan TEXT_MUTED
+        statusPanel.setBackground(new Color(241, 245, 249)); // Sama dengan BG_MAIN
+        
+        JLabel lblStatus = new JLabel("Status: Terhubung ke database Supabase | Pengguna Aktif: " + loggedInUser.getUsername());
+        lblStatus.setForeground(new Color(100, 116, 139)); // Sama dengan TEXT_MUTED
         lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         statusPanel.add(lblStatus, BorderLayout.WEST);
 
@@ -72,7 +73,7 @@ public class DashboardFrame extends JFrame {
     public static void main(String[] args) {
         // Kelas main cadangan jika ingin langsung mengetes DashboardFrame tanpa login
         try {
-            FlatDarkLaf.setup();
+            FlatLightLaf.setup();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

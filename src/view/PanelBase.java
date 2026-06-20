@@ -11,20 +11,20 @@ import java.awt.event.MouseEvent;
 
 public abstract class PanelBase extends JPanel {
 
-    protected static final Color BG_MAIN      = new Color(15, 23, 42);
-    protected static final Color BG_CARD      = new Color(22, 27, 45);
-    protected static final Color BG_FILTER    = new Color(17, 24, 39);
-    protected static final Color BG_HEADER    = new Color(13, 18, 30);
-    protected static final Color BORDER_COLOR = new Color(51, 65, 85);
-    protected static final Color TEXT_WHITE   = new Color(248, 250, 252);
-    protected static final Color TEXT_MUTED   = new Color(148, 163, 184);
-    protected static final Color TBL_EVEN     = new Color(22, 27, 45);
-    protected static final Color TBL_ODD      = new Color(17, 24, 39);
-    protected static final Color TBL_HDR      = new Color(30, 41, 59);
-    protected static final Color ACCENT_BLUE  = new Color(59, 130, 246);
-    protected static final Color ACCENT_CYAN  = new Color(34, 211, 238);
-    protected static final Color ACCENT_GREEN = new Color(16, 185, 129);
-    protected static final Color ACCENT_RED   = new Color(239, 68, 68);
+    protected static final Color BG_MAIN      = new Color(241, 245, 249); // Slate 100
+    protected static final Color BG_CARD      = new Color(255, 255, 255); // White
+    protected static final Color BG_FILTER    = new Color(248, 250, 252); // Slate 50
+    protected static final Color BG_HEADER    = new Color(255, 255, 255); // White
+    protected static final Color BORDER_COLOR = new Color(203, 213, 225); // Slate 300
+    protected static final Color TEXT_WHITE   = new Color(15, 23, 42);    // Naming kept for compatibility (Dark Slate 900)
+    protected static final Color TEXT_MUTED   = new Color(100, 116, 139); // Slate 500
+    protected static final Color TBL_EVEN     = new Color(255, 255, 255); // White
+    protected static final Color TBL_ODD      = new Color(248, 250, 252); // Slate 50
+    protected static final Color TBL_HDR      = new Color(241, 245, 249); // Slate 100
+    protected static final Color ACCENT_BLUE  = new Color(37, 99, 235);   // Corporate Blue
+    protected static final Color ACCENT_CYAN  = new Color(14, 165, 233);  // Sky 500
+    protected static final Color ACCENT_GREEN = new Color(16, 185, 129);  // Emerald 500
+    protected static final Color ACCENT_RED   = new Color(239, 68, 68);   // Red 500
 
     protected JTable  mainTable;
     protected JPanel  filterBar;
@@ -164,7 +164,7 @@ public abstract class PanelBase extends JPanel {
     protected JTextField styledSearch(String placeholder) {
         JTextField f = new JTextField(18);
         f.putClientProperty("JTextField.placeholderText", placeholder);
-        f.setBackground(new Color(30, 41, 59));
+        f.setBackground(new Color(248, 250, 252));
         f.setForeground(TEXT_WHITE);
         f.setCaretColor(ACCENT_BLUE);
         f.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -174,7 +174,7 @@ public abstract class PanelBase extends JPanel {
 
     protected JComboBox<String> styledCombo(String[] items) {
         JComboBox<String> cb = new JComboBox<>(items);
-        cb.setBackground(new Color(30, 41, 59));
+        cb.setBackground(new Color(248, 250, 252));
         cb.setForeground(TEXT_WHITE);
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cb.setPreferredSize(new Dimension(cb.getPreferredSize().width, 36));
@@ -202,7 +202,7 @@ public abstract class PanelBase extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 if (!isEnabled()) {
-                    g2.setColor(new Color(51, 65, 85)); // Warna abu-abu untuk tombol non-aktif
+                    g2.setColor(new Color(203, 213, 225)); // Warna abu-abu untuk tombol non-aktif (Slate 300)
                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
                 } else {
                     Color c1 = hovered ? to   : from;

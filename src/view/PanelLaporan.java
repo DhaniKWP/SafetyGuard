@@ -12,19 +12,21 @@ import java.util.List;
 
 public class PanelLaporan extends JPanel {
 
-    private static final Color BG_MAIN    = new Color(15, 23, 42);
-    private static final Color BG_CARD    = new Color(22, 27, 45);
-    private static final Color BG_SECTION = new Color(30, 41, 59);
-    private static final Color ACCENT_BLUE  = new Color(59, 130, 246);
-    private static final Color ACCENT_CYAN  = new Color(34, 211, 238);
+    private static final Color BG_MAIN    = new Color(241, 245, 249);
+    private static final Color BG_CARD    = new Color(255, 255, 255);
+    private static final Color BG_SECTION = new Color(248, 250, 252);
+    private static final Color ACCENT_BLUE  = new Color(37, 99, 235);
+    private static final Color ACCENT_CYAN  = new Color(14, 165, 233);
     private static final Color ACCENT_GREEN = new Color(16, 185, 129);
     private static final Color ACCENT_ORANGE= new Color(245, 158, 11);
-    private static final Color BORDER_COLOR = new Color(51, 65, 85);
-    private static final Color TEXT_WHITE  = new Color(248, 250, 252);
-    private static final Color TEXT_MUTED  = new Color(148, 163, 184);
+    private static final Color BORDER_COLOR = new Color(203, 213, 225);
+    private static final Color TEXT_WHITE  = new Color(15, 23, 42); // Reused constant name
+    private static final Color TEXT_MUTED  = new Color(100, 116, 139);
 
     private Pengguna loggedInUser;
     private JComboBox<String> cbJenisLaporan;
+    private JTextField txtTanggalAwal;
+    private JTextField txtTanggalAkhir;
 
     // Kartu modul laporan
     private final String[][] MODUL_DATA = {
@@ -47,7 +49,7 @@ public class PanelLaporan extends JPanel {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                GradientPaint gp = new GradientPaint(0, 0, new Color(17, 24, 39), getWidth(), 0, BG_CARD);
+                GradientPaint gp = new GradientPaint(0, 0, new Color(226, 232, 240), getWidth(), 0, BG_CARD);
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 // Garis bawah
@@ -207,11 +209,84 @@ public class PanelLaporan extends JPanel {
         gbc.gridx = 1; gbc.weightx = 1.0;
         panel.add(cbJenisLaporan, gbc);
 
+        // Filter Periode
+        JLabel lblPeriode = new JLabel("Rentang Tanggal:");
+        lblPeriode.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblPeriode.setForeground(TEXT_MUTED);
+        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
+        gbc.insets = new Insets(4, 8, 4, 8);
+        panel.add(lblPeriode, gbc);
+
+        JPanel pnlPeriode = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pnlPeriode.setOpaque(false);
+        pnlPeriode.setPreferredSize(new Dimension(300, 38));
+        
+        txtTanggalAwal = new JTextField();
+        txtTanggalAwal.putClientProperty("JTextField.placeholderText", "Tgl Awal");
+        txtTanggalAwal.setPreferredSize(new Dimension(85, 38));
+        txtTanggalAwal.setEditable(false);
+        txtTanggalAwal.setHorizontalAlignment(JTextField.CENTER);
+        txtTanggalAwal.setBackground(new Color(248, 250, 252));
+        txtTanggalAwal.setForeground(TEXT_WHITE);
+        
+        JButton btnCalAwal = new JButton("📅");
+        btnCalAwal.setPreferredSize(new Dimension(42, 38));
+        btnCalAwal.addActionListener(e -> {
+            helper.DatePicker dp = new helper.DatePicker((JFrame) SwingUtilities.getWindowAncestor(panel));
+            String date = dp.setPickedDate();
+            if(date != null && !date.isEmpty()) txtTanggalAwal.setText(date);
+        });
+
+        JLabel lblTo = new JLabel(" s/d ");
+        lblTo.setForeground(TEXT_WHITE);
+
+        txtTanggalAkhir = new JTextField();
+        txtTanggalAkhir.putClientProperty("JTextField.placeholderText", "Tgl Akhir");
+        txtTanggalAkhir.setPreferredSize(new Dimension(85, 38));
+        txtTanggalAkhir.setEditable(false);
+        txtTanggalAkhir.setHorizontalAlignment(JTextField.CENTER);
+        txtTanggalAkhir.setBackground(new Color(248, 250, 252));
+        txtTanggalAkhir.setForeground(TEXT_WHITE);
+
+        JButton btnCalAkhir = new JButton("📅");
+        btnCalAkhir.setPreferredSize(new Dimension(42, 38));
+        btnCalAkhir.addActionListener(e -> {
+            helper.DatePicker dp = new helper.DatePicker((JFrame) SwingUtilities.getWindowAncestor(panel));
+            String date = dp.setPickedDate();
+            if(date != null && !date.isEmpty()) txtTanggalAkhir.setText(date);
+        });
+        
+        // Tombol Reset
+        JButton btnReset = new JButton("X");
+        btnReset.setPreferredSize(new Dimension(40, 38));
+        btnReset.setBackground(new Color(239, 68, 68));
+        btnReset.setForeground(Color.WHITE);
+        btnReset.setToolTipText("Hapus Filter Tanggal");
+        btnReset.addActionListener(e -> {
+            txtTanggalAwal.setText("");
+            txtTanggalAkhir.setText("");
+        });
+        
+        pnlPeriode.add(txtTanggalAwal);
+        pnlPeriode.add(btnCalAwal);
+        pnlPeriode.add(lblTo);
+        pnlPeriode.add(txtTanggalAkhir);
+        pnlPeriode.add(btnCalAkhir);
+        // pnlPeriode.add(btnReset); // Opsional jika muat, tapi kita letakkan di sebelahnya saja
+        
+        JPanel pnlWrapper = new JPanel(new BorderLayout(5, 0));
+        pnlWrapper.setOpaque(false);
+        pnlWrapper.add(pnlPeriode, BorderLayout.CENTER);
+        pnlWrapper.add(btnReset, BorderLayout.EAST);
+        
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        panel.add(pnlWrapper, gbc);
+
         // Baris Tombol Ekspor
         JLabel lblFormat = new JLabel("Format Output:");
         lblFormat.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblFormat.setForeground(TEXT_MUTED);
-        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
+        gbc.gridx = 0; gbc.gridy = 4; gbc.weightx = 0;
         gbc.insets = new Insets(4, 8, 8, 8);
         panel.add(lblFormat, gbc);
 
@@ -234,7 +309,7 @@ public class PanelLaporan extends JPanel {
         JLabel lblInfo = new JLabel("Catatan: PDF mencakup kop surat, ringkasan eksekutif, dan kolom tanda tangan.");
         lblInfo.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblInfo.setForeground(new Color(100, 116, 139));
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
         gbc.insets = new Insets(0, 8, 0, 8);
         panel.add(lblInfo, gbc);
 
@@ -271,7 +346,22 @@ public class PanelLaporan extends JPanel {
         return btn;
     }
 
-    // ====== LOGIKA EKSPOR PDF (sama seperti sebelumnya) ======
+    private boolean filterDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) return true;
+        String start = txtTanggalAwal.getText();
+        String end = txtTanggalAkhir.getText();
+        
+        boolean match = true;
+        if (start != null && !start.isEmpty()) {
+            if (dateStr.compareTo(start) < 0) match = false;
+        }
+        if (end != null && !end.isEmpty()) {
+            if (dateStr.compareTo(end) > 0) match = false;
+        }
+        return match;
+    }
+
+    // ====== LOGIKA EKSPOR PDF ======
     private void exportToPDF(String jenisLaporan) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -279,42 +369,41 @@ public class PanelLaporan extends JPanel {
             String fileName = "Laporan_K3.pdf";
             String titleStr = "LAPORAN KESELAMATAN K3";
             String summaryStr = "";
+            String start = txtTanggalAwal.getText().isEmpty() ? "-" : txtTanggalAwal.getText();
+            String end = txtTanggalAkhir.getText().isEmpty() ? "-" : txtTanggalAkhir.getText();
+            String periodeStr = (start.equals("-") && end.equals("-")) ? "Semua Data" : (start + " s/d " + end);
 
-            List<LaporanInsiden>      listInsiden  = null;
-            List<TindakanPerbaikan>   listCapa     = null;
-            List<InspeksiKeselamatan> listInspeksi = null;
-            List<DistribusiAPD>       listApd      = null;
+            List<LaporanInsiden>      listInsiden  = new java.util.ArrayList<>();
+            List<TindakanPerbaikan>   listCapa     = new java.util.ArrayList<>();
+            List<InspeksiKeselamatan> listInspeksi = new java.util.ArrayList<>();
+            List<DistribusiAPD>       listApd      = new java.util.ArrayList<>();
             List<Karyawan>            listKaryawan = new KaryawanDAO().getAll();
 
             if (jenisLaporan.equals("Laporan Insiden K3")) {
-                listInsiden = new LaporanInsidenDAO().getAll();
-                if (listInsiden == null || listInsiden.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Data Insiden kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE); return;
-                }
+                List<LaporanInsiden> raw = new LaporanInsidenDAO().getAll();
+                if (raw != null) for (LaporanInsiden i : raw) if (filterDate(i.getTanggalKejadian())) listInsiden.add(i);
+                if (listInsiden.isEmpty()) { JOptionPane.showMessageDialog(this, "Data Insiden kosong untuk periode ini.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName    = "Rekap_Laporan_Insiden_K3.pdf";
                 titleStr    = "LAPORAN REKAPITULASI INSIDEN KESELAMATAN K3";
                 summaryStr  = "Dokumen ini merupakan laporan resmi mengenai rekapitulasi data insiden keselamatan kerja yang terjadi di lingkungan operasional pabrik. Laporan ini ditujukan sebagai bahan evaluasi dan audit K3 internal perusahaan guna mencegah terjadinya insiden serupa di masa mendatang.";
             } else if (jenisLaporan.equals("Tindakan Perbaikan (CAPA)")) {
-                listCapa = new TindakanPerbaikanDAO().getAll();
-                if (listCapa == null || listCapa.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Data CAPA kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE); return;
-                }
+                List<TindakanPerbaikan> raw = new TindakanPerbaikanDAO().getAll();
+                if (raw != null) for (TindakanPerbaikan i : raw) if (filterDate(i.getDeadline()) || filterDate(i.getTanggalSelesai())) listCapa.add(i);
+                if (listCapa.isEmpty()) { JOptionPane.showMessageDialog(this, "Data CAPA kosong untuk periode ini.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName    = "Laporan_Tindakan_CAPA.pdf";
                 titleStr    = "LAPORAN TINDAKAN PERBAIKAN & PENCEGAHAN (CAPA)";
                 summaryStr  = "Dokumen ini menyajikan status tindakan korektif dan preventif (CAPA) yang ditugaskan kepada penanggung jawab masing-masing departemen. Laporan ini berguna untuk memonitor progres penyelesaian perbaikan fasilitas dan kebijakan K3.";
             } else if (jenisLaporan.equals("Inspeksi Keselamatan")) {
-                listInspeksi = new InspeksiKeselamatanDAO().getAll();
-                if (listInspeksi == null || listInspeksi.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Data Inspeksi kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE); return;
-                }
+                List<InspeksiKeselamatan> raw = new InspeksiKeselamatanDAO().getAll();
+                if (raw != null) for (InspeksiKeselamatan i : raw) if (filterDate(i.getTanggalInspeksi())) listInspeksi.add(i);
+                if (listInspeksi.isEmpty()) { JOptionPane.showMessageDialog(this, "Data Inspeksi kosong untuk periode ini.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName    = "Laporan_Inspeksi_Keselamatan.pdf";
                 titleStr    = "LAPORAN HASIL INSPEKSI KESELAMATAN AREA";
                 summaryStr  = "Dokumen ini menjabarkan hasil inspeksi rutin keselamatan kerja di berbagai area pabrik. Mencakup daftar temuan bahaya, rekomendasi perbaikan, serta penilaian (skor) kepatuhan terhadap standar HSE perusahaan.";
             } else if (jenisLaporan.equals("Distribusi APD")) {
-                listApd = new DistribusiAPDDAO().getAll();
-                if (listApd == null || listApd.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Data Distribusi APD kosong.", "Peringatan", JOptionPane.WARNING_MESSAGE); return;
-                }
+                List<DistribusiAPD> raw = new DistribusiAPDDAO().getAll();
+                if (raw != null) for (DistribusiAPD i : raw) if (filterDate(i.getTanggalPembagian())) listApd.add(i);
+                if (listApd.isEmpty()) { JOptionPane.showMessageDialog(this, "Data Distribusi APD kosong untuk periode ini.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName    = "Laporan_Distribusi_APD.pdf";
                 titleStr    = "LAPORAN DISTRIBUSI ALAT PELINDUNG DIRI (APD)";
                 summaryStr  = "Dokumen ini adalah rekapitulasi penyaluran Alat Pelindung Diri (APD) kepada seluruh karyawan pabrik. Digunakan untuk memastikan setiap personel telah dibekali perlengkapan standar keamanan yang sesuai dengan prosedur operasional.";
@@ -361,6 +450,7 @@ public class PanelLaporan extends JPanel {
             com.itextpdf.text.Paragraph metaInfo = new com.itextpdf.text.Paragraph();
             metaInfo.setFont(fontNormal);
             metaInfo.add("Tanggal Cetak  : " + new java.text.SimpleDateFormat("dd MMMM yyyy HH:mm").format(new java.util.Date()) + "\n");
+            metaInfo.add("Periode Data : " + periodeStr + "\n");
             metaInfo.add("Dicetak Oleh    : " + pencetak + "\n\nExecutive Summary:\n" + summaryStr + "\n\n");
             document.add(metaInfo);
 
@@ -408,43 +498,51 @@ public class PanelLaporan extends JPanel {
         try {
             String userHome = System.getProperty("user.home");
             String fileName = "Laporan_K3.csv";
-            List<LaporanInsiden>      listInsiden  = null;
-            List<TindakanPerbaikan>   listCapa     = null;
-            List<InspeksiKeselamatan> listInspeksi = null;
-            List<DistribusiAPD>       listApd      = null;
+            List<LaporanInsiden>      listInsiden  = new java.util.ArrayList<>();
+            List<TindakanPerbaikan>   listCapa     = new java.util.ArrayList<>();
+            List<InspeksiKeselamatan> listInspeksi = new java.util.ArrayList<>();
+            List<DistribusiAPD>       listApd      = new java.util.ArrayList<>();
             List<Karyawan>            listKaryawan = new KaryawanDAO().getAll();
 
             if (jenisLaporan.equals("Laporan Insiden K3")) {
-                listInsiden = new LaporanInsidenDAO().getAll();
-                if (listInsiden == null || listInsiden.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data Insiden.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
+                List<LaporanInsiden> raw = new LaporanInsidenDAO().getAll();
+                if (raw != null) for (LaporanInsiden i : raw) if (filterDate(i.getTanggalKejadian())) listInsiden.add(i);
+                if (listInsiden.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data Insiden.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName = "Rekap_Laporan_Insiden_K3.csv";
                 FileWriter w = new FileWriter(userHome + File.separator + "Downloads" + File.separator + fileName);
-                w.append("ID Insiden,Tanggal Kejadian,Lokasi Kejadian,Kategori Insiden,Deskripsi Kejadian,Status Investigasi\n");
-                for (LaporanInsiden ins : listInsiden) { w.append(ins.getIdInsiden()).append(",").append(ins.getTanggalKejadian()).append(",").append(ins.getLokasiKejadian()).append(",").append(ins.getKategoriInsiden()).append(",").append(ins.getDeskripsiKejadian().replace(",", " ")).append(",").append(ins.getStatusInvestigasi()).append("\n"); }
+                w.append("No,Tanggal Kejadian,Lokasi Kejadian,Kategori Insiden,Deskripsi Kejadian,Status Investigasi\n");
+                int no = 1;
+                for (LaporanInsiden ins : listInsiden) { w.append(String.valueOf(no++)).append(",").append(ins.getTanggalKejadian()).append(",").append(ins.getLokasiKejadian()).append(",").append(ins.getKategoriInsiden()).append(",").append(ins.getDeskripsiKejadian().replace(",", " ")).append(",").append(ins.getStatusInvestigasi()).append("\n"); }
                 w.close();
             } else if (jenisLaporan.equals("Tindakan Perbaikan (CAPA)")) {
-                listCapa = new TindakanPerbaikanDAO().getAll();
-                if (listCapa == null || listCapa.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data CAPA.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
+                List<TindakanPerbaikan> raw = new TindakanPerbaikanDAO().getAll();
+                if (raw != null) for (TindakanPerbaikan i : raw) if (filterDate(i.getDeadline()) || filterDate(i.getTanggalSelesai())) listCapa.add(i);
+                if (listCapa.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data CAPA.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName = "Laporan_Tindakan_CAPA.csv";
                 FileWriter w = new FileWriter(userHome + File.separator + "Downloads" + File.separator + fileName);
-                w.append("ID Tindakan,Detail Tindakan,Penanggung Jawab,Deadline,Tanggal Selesai,Status\n");
-                for (TindakanPerbaikan capa : listCapa) { String pj = capa.getIdPenanggungJawab(); if (listKaryawan != null) for (Karyawan k : listKaryawan) if (k.getIdKaryawan().equals(capa.getIdPenanggungJawab())) { pj = k.getNamaLengkap(); break; } w.append(capa.getIdTindakan()).append(",").append(capa.getTindakanDetail().replace(",", " ")).append(",").append(pj).append(",").append(capa.getDeadline() != null ? capa.getDeadline() : "").append(",").append(capa.getTanggalSelesai() != null ? capa.getTanggalSelesai() : "").append(",").append(capa.getStatusTindakan()).append("\n"); }
+                w.append("No,Detail Tindakan,Penanggung Jawab,Deadline,Tanggal Selesai,Status\n");
+                int no = 1;
+                for (TindakanPerbaikan capa : listCapa) { String pj = capa.getIdPenanggungJawab(); if (listKaryawan != null) for (Karyawan k : listKaryawan) if (k.getIdKaryawan().equals(capa.getIdPenanggungJawab())) { pj = k.getNamaLengkap(); break; } w.append(String.valueOf(no++)).append(",").append(capa.getTindakanDetail().replace(",", " ")).append(",").append(pj).append(",").append(capa.getDeadline() != null ? capa.getDeadline() : "").append(",").append(capa.getTanggalSelesai() != null ? capa.getTanggalSelesai() : "").append(",").append(capa.getStatusTindakan()).append("\n"); }
                 w.close();
             } else if (jenisLaporan.equals("Inspeksi Keselamatan")) {
-                listInspeksi = new InspeksiKeselamatanDAO().getAll();
-                if (listInspeksi == null || listInspeksi.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data Inspeksi.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
+                List<InspeksiKeselamatan> raw = new InspeksiKeselamatanDAO().getAll();
+                if (raw != null) for (InspeksiKeselamatan i : raw) if (filterDate(i.getTanggalInspeksi())) listInspeksi.add(i);
+                if (listInspeksi.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data Inspeksi.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName = "Laporan_Inspeksi_Keselamatan.csv";
                 FileWriter w = new FileWriter(userHome + File.separator + "Downloads" + File.separator + fileName);
-                w.append("ID Inspeksi,Tanggal,Area,Temuan Bahaya,Skor,Rekomendasi\n");
-                for (InspeksiKeselamatan ins : listInspeksi) { w.append(ins.getIdInspeksi()).append(",").append(ins.getTanggalInspeksi()).append(",").append(ins.getAreaInspeksi()).append(",").append(ins.getTemuanBahaya() != null ? ins.getTemuanBahaya().replace(",", " ").replace("\n", " ") : "Aman").append(",").append(String.valueOf(ins.getSkorKepatuhan())).append(",").append(ins.getRekomendasi().replace(",", " ").replace("\n", " ")).append("\n"); }
+                w.append("No,Tanggal,Area,Temuan Bahaya,Skor,Rekomendasi\n");
+                int no = 1;
+                for (InspeksiKeselamatan ins : listInspeksi) { w.append(String.valueOf(no++)).append(",").append(ins.getTanggalInspeksi()).append(",").append(ins.getAreaInspeksi()).append(",").append(ins.getTemuanBahaya() != null ? ins.getTemuanBahaya().replace(",", " ").replace("\n", " ") : "Aman").append(",").append(String.valueOf(ins.getSkorKepatuhan())).append(",").append(ins.getRekomendasi().replace(",", " ").replace("\n", " ")).append("\n"); }
                 w.close();
             } else if (jenisLaporan.equals("Distribusi APD")) {
-                listApd = new DistribusiAPDDAO().getAll();
-                if (listApd == null || listApd.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data APD.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
+                List<DistribusiAPD> raw = new DistribusiAPDDAO().getAll();
+                if (raw != null) for (DistribusiAPD i : raw) if (filterDate(i.getTanggalPembagian())) listApd.add(i);
+                if (listApd.isEmpty()) { JOptionPane.showMessageDialog(this, "Tidak ada data APD.", "Peringatan", JOptionPane.WARNING_MESSAGE); return; }
                 fileName = "Laporan_Distribusi_APD.csv";
                 FileWriter w = new FileWriter(userHome + File.separator + "Downloads" + File.separator + fileName);
-                w.append("ID Distribusi,Tanggal Pembagian,Penerima,Jenis APD,Jumlah,Kondisi\n");
-                for (DistribusiAPD apd : listApd) { String penerima = apd.getIdKaryawan(); if (listKaryawan != null) for (Karyawan k : listKaryawan) if (k.getIdKaryawan().equals(apd.getIdKaryawan())) { penerima = k.getNamaLengkap(); break; } w.append(apd.getIdDistribusi()).append(",").append(apd.getTanggalPembagian()).append(",").append(penerima).append(",").append(apd.getJenisApd()).append(",").append(String.valueOf(apd.getJumlah())).append(",").append(apd.getKondisiApd()).append("\n"); }
+                w.append("No,Tanggal Pembagian,Penerima,Jenis APD,Jumlah,Kondisi\n");
+                int no = 1;
+                for (DistribusiAPD apd : listApd) { String penerima = apd.getIdKaryawan(); if (listKaryawan != null) for (Karyawan k : listKaryawan) if (k.getIdKaryawan().equals(apd.getIdKaryawan())) { penerima = k.getNamaLengkap(); break; } w.append(String.valueOf(no++)).append(",").append(apd.getTanggalPembagian()).append(",").append(penerima).append(",").append(apd.getJenisApd()).append(",").append(String.valueOf(apd.getJumlah())).append(",").append(apd.getKondisiApd()).append("\n"); }
                 w.close();
             }
 
