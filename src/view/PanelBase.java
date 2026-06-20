@@ -11,20 +11,20 @@ import java.awt.event.MouseEvent;
 
 public abstract class PanelBase extends JPanel {
 
-    protected static final Color BG_MAIN      = new Color(241, 245, 249); // Slate 100
-    protected static final Color BG_CARD      = new Color(255, 255, 255); // White
-    protected static final Color BG_FILTER    = new Color(248, 250, 252); // Slate 50
-    protected static final Color BG_HEADER    = new Color(255, 255, 255); // White
-    protected static final Color BORDER_COLOR = new Color(203, 213, 225); // Slate 300
-    protected static final Color TEXT_WHITE   = new Color(15, 23, 42);    // Naming kept for compatibility (Dark Slate 900)
-    protected static final Color TEXT_MUTED   = new Color(100, 116, 139); // Slate 500
-    protected static final Color TBL_EVEN     = new Color(255, 255, 255); // White
-    protected static final Color TBL_ODD      = new Color(248, 250, 252); // Slate 50
-    protected static final Color TBL_HDR      = new Color(241, 245, 249); // Slate 100
-    protected static final Color ACCENT_BLUE  = new Color(37, 99, 235);   // Corporate Blue
-    protected static final Color ACCENT_CYAN  = new Color(14, 165, 233);  // Sky 500
-    protected static final Color ACCENT_GREEN = new Color(16, 185, 129);  // Emerald 500
-    protected static final Color ACCENT_RED   = new Color(239, 68, 68);   // Red 500
+    protected static final Color BG_MAIN      = new Color(241, 245, 249);
+    protected static final Color BG_CARD      = new Color(255, 255, 255);
+    protected static final Color BG_FILTER    = new Color(248, 250, 252);
+    protected static final Color BG_HEADER    = new Color(255, 255, 255);
+    protected static final Color BORDER_COLOR = new Color(203, 213, 225);
+    protected static final Color TEXT_WHITE   = new Color(15, 23, 42);
+    protected static final Color TEXT_MUTED   = new Color(100, 116, 139);
+    protected static final Color TBL_EVEN     = new Color(255, 255, 255);
+    protected static final Color TBL_ODD      = new Color(248, 250, 252);
+    protected static final Color TBL_HDR      = new Color(241, 245, 249);
+    protected static final Color ACCENT_BLUE  = new Color(37, 99, 235);
+    protected static final Color ACCENT_CYAN  = new Color(14, 165, 233);
+    protected static final Color ACCENT_GREEN = new Color(16, 185, 129);
+    protected static final Color ACCENT_RED   = new Color(239, 68, 68);
 
     protected JTable  mainTable;
     protected JPanel  filterBar;
@@ -43,10 +43,9 @@ public abstract class PanelBase extends JPanel {
         filterBar = buildFilterBar();
         actionBar = buildActionBar();
         topCenter.add(filterBar);
-        topCenter.add(Box.createHorizontalGlue()); // Ini fitur auto-layout untuk menahan tombol di kanan
+        topCenter.add(Box.createHorizontalGlue());
         topCenter.add(actionBar);
 
-        // Background kustom untuk bar filter & aksi gabungan
         JPanel topContainer = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -71,7 +70,6 @@ public abstract class PanelBase extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
     }
 
-    // ── Header ──────────────────────────────────────────────────────────────
     private JPanel buildHeader(Color accent, String title, String subtitle) {
         JPanel header = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
@@ -80,10 +78,8 @@ public abstract class PanelBase extends JPanel {
                 GradientPaint gp = new GradientPaint(0, 0, BG_HEADER, getWidth(), 0, BG_CARD);
                 g2.setPaint(gp);
                 g2.fillRect(0, 0, getWidth(), getHeight());
-                // Garis accent di sisi kiri
                 g2.setColor(accent);
                 g2.fillRect(0, 0, 4, getHeight());
-                // Border bawah
                 g2.setColor(BORDER_COLOR);
                 g2.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
                 g2.dispose();
@@ -110,14 +106,12 @@ public abstract class PanelBase extends JPanel {
         return header;
     }
 
-    // ── Filter Bar ──────────────────────────────────────────────────────────
     protected JPanel buildFilterBar() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         bar.setOpaque(false);
         return bar;
     }
 
-    // ── Tabel ────────────────────────────────────────────────────────────────
     private JTable buildTable() {
         JTable table = new JTable() {
             @Override public Component prepareRenderer(javax.swing.table.TableCellRenderer r, int row, int col) {
@@ -152,14 +146,12 @@ public abstract class PanelBase extends JPanel {
         return table;
     }
 
-    // ── Action Bar ───────────────────────────────────────────────────────────
     protected JPanel buildActionBar() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
         bar.setOpaque(false);
         return bar;
     }
 
-    // ── Helper untuk subkelas ─────────────────────────────────────────────────
 
     protected JTextField styledSearch(String placeholder) {
         JTextField f = new JTextField(18);
@@ -202,7 +194,7 @@ public abstract class PanelBase extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 if (!isEnabled()) {
-                    g2.setColor(new Color(203, 213, 225)); // Warna abu-abu untuk tombol non-aktif (Slate 300)
+                    g2.setColor(new Color(203, 213, 225));
                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
                 } else {
                     Color c1 = hovered ? to   : from;
@@ -228,7 +220,7 @@ public abstract class PanelBase extends JPanel {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 6, 8, 12); // Padding antar elemen
+        gbc.insets = new Insets(8, 6, 8, 12);
         gbc.anchor = GridBagConstraints.WEST;
         
         for (int i = 0; i < labels.length; i++) {
@@ -245,13 +237,11 @@ public abstract class PanelBase extends JPanel {
             gbc.weightx = 1.0;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             if (inputs[i] instanceof JScrollPane) {
-                // Biar text area bisa meregang tingginya
                 gbc.weighty = 1.0;
                 gbc.fill = GridBagConstraints.BOTH;
             } else {
                 gbc.weighty = 0;
             }
-            // Ubah font standar inputan
             inputs[i].setFont(new Font("Segoe UI", Font.PLAIN, 14));
             panel.add(inputs[i], gbc);
         }

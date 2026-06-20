@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs:
+ * Click nbfs:
  */
 package model;
 
@@ -25,7 +25,6 @@ public class DistribusiAPD {
         this.jumlah = jumlah;
         this.kondisi_apd = kondisi_apd;
     }
-    // Getter dan Setter
     public String getIdDistribusi() { return id_distribusi; }
     public void setIdDistribusi(String id_distribusi) { this.id_distribusi = id_distribusi; }
     public String getIdKaryawan() { return id_karyawan; }

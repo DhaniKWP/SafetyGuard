@@ -17,7 +17,7 @@ public class LoginForm extends JFrame {
     private static final Color ACCENT_BLUE  = new Color(37, 99, 235);
     private static final Color ACCENT_CYAN  = new Color(59, 130, 246);
     private static final Color BORDER_COLOR = new Color(203, 213, 225);
-    private static final Color TEXT_WHITE   = new Color(15, 23, 42); // Reused constant name, but it's dark text now
+    private static final Color TEXT_WHITE   = new Color(15, 23, 42);
     private static final Color TEXT_MUTED   = new Color(100, 116, 139);
     private static final Color INPUT_BG     = new Color(248, 250, 252);
     private static final Color PROGRESS_BG  = new Color(226, 232, 240);
@@ -54,7 +54,6 @@ public class LoginForm extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
     }
 
-    // ===================== PANEL KIRI: BRANDING =====================
     private JPanel createBrandingPanel() {
         JPanel panel = new JPanel(new GridBagLayout()) {
             @Override protected void paintComponent(Graphics g) {
@@ -63,7 +62,6 @@ public class LoginForm extends JFrame {
                 GradientPaint gp = new GradientPaint(0, 0, new Color(30, 58, 138), getWidth(), getHeight(), new Color(37, 99, 235));
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
-                // Lingkaran dekoratif
                 g2d.setColor(new Color(255, 255, 255, 12));
                 g2d.fillOval(-60, -60, 280, 280);
                 g2d.setColor(new Color(255, 255, 255, 8));
@@ -80,7 +78,6 @@ public class LoginForm extends JFrame {
         gbc.insets = new Insets(8, 30, 8, 30);
         gbc.anchor = GridBagConstraints.CENTER;
 
-        // Ikon Shield dihapus sesuai permintaan
 
 
         JLabel lblAppName = new JLabel("SafetyGuard");
@@ -97,7 +94,6 @@ public class LoginForm extends JFrame {
         sep.setForeground(new Color(255, 255, 255, 40));
         sep.setPreferredSize(new Dimension(220, 1));
 
-        // Fitur-fitur
         JPanel featuresPanel = new JPanel();
         featuresPanel.setOpaque(false);
         featuresPanel.setLayout(new BoxLayout(featuresPanel, BoxLayout.Y_AXIS));
@@ -125,7 +121,6 @@ public class LoginForm extends JFrame {
         return panel;
     }
 
-    // ===================== PANEL KANAN: FORM LOGIN =====================
     private JPanel createFormPanel() {
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setOpaque(false);
@@ -150,7 +145,6 @@ public class LoginForm extends JFrame {
         inner.setOpaque(false);
         inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
 
-        // Header
         JLabel lblWelcome = new JLabel("Selamat Datang", SwingConstants.CENTER);
         lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 26));
         lblWelcome.setForeground(TEXT_WHITE);
@@ -166,14 +160,12 @@ public class LoginForm extends JFrame {
         inner.add(lblSub);
         inner.add(Box.createVerticalStrut(24));
 
-        // Field Username
         inner.add(fieldLabel("USERNAME"));
         inner.add(Box.createVerticalStrut(6));
         txtUsername = styledField("Masukkan username Anda...");
         inner.add(txtUsername);
         inner.add(Box.createVerticalStrut(14));
 
-        // Field Password
         inner.add(fieldLabel("PASSWORD"));
         inner.add(Box.createVerticalStrut(6));
         txtPassword = new JPasswordField();
@@ -181,7 +173,6 @@ public class LoginForm extends JFrame {
         inner.add(txtPassword);
         inner.add(Box.createVerticalStrut(6));
 
-        // Label error
         lblError = new JLabel(" ", SwingConstants.CENTER);
         lblError.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblError.setForeground(new Color(248, 113, 113));
@@ -189,7 +180,6 @@ public class LoginForm extends JFrame {
         inner.add(lblError);
         inner.add(Box.createVerticalStrut(12));
 
-        // ===== PROGRESS SECTION (loading bar saat login) =====
         progressSection = new JPanel(new BorderLayout(0, 4));
         progressSection.setOpaque(false);
         progressSection.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -204,10 +194,8 @@ public class LoginForm extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                // Track
                 g2d.setColor(PROGRESS_BG);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), getHeight(), getHeight());
-                // Fill bergradien
                 int fillW = (int)((getWidth() * getValue()) / (double)getMaximum());
                 if (fillW > 0) {
                     GradientPaint gp = new GradientPaint(0, 0, ACCENT_BLUE, fillW, 0, ACCENT_CYAN);
@@ -230,7 +218,6 @@ public class LoginForm extends JFrame {
         inner.add(progressSection);
         inner.add(Box.createVerticalStrut(14));
 
-        // Tombol Login bergradien
         btnLogin = new JButton("MASUK") {
             private boolean hovered = false;
             {
@@ -305,7 +292,6 @@ public class LoginForm extends JFrame {
         f.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
     }
 
-    // ===================== PROSES LOGIN DENGAN ANIMASI PROGRESS =====================
     private void processLogin() {
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
@@ -316,14 +302,12 @@ public class LoginForm extends JFrame {
         }
         lblError.setText(" ");
 
-        // Tampilkan loading bar
         btnLogin.setEnabled(false);
         btnLogin.setText("  MEMVERIFIKASI...");
         progressSection.setVisible(true);
         progressBar.setValue(0);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        // Animasi progress bar menggunakan Timer
         String[] steps = {"Menghubungkan ke server...", "Memvalidasi kredensial...", "Memuat data pengguna..."};
         int[] targets = {30, 65, 85};
         final int[] stepIdx = {0};
@@ -340,7 +324,6 @@ public class LoginForm extends JFrame {
         });
         progressTimer.start();
 
-        // Background worker untuk proses login sesungguhnya
         SwingWorker<Pengguna, Void> worker = new SwingWorker<>() {
             @Override protected Pengguna doInBackground() throws Exception {
                 PenggunaDAO dao = new PenggunaDAO();
@@ -352,7 +335,6 @@ public class LoginForm extends JFrame {
                 try {
                     Pengguna pengguna = get();
                     if (pengguna != null) {
-                        // Selesaikan progress ke 100%
                         lblStatus.setText("Login berhasil! Membuka dashboard...");
                         animateProgress(progressBar, 100);
                         Timer closeTimer = new Timer(600, ev2 -> {

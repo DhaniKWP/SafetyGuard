@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs:
+ * Click nbfs:
  */
 package dao;
 
@@ -16,7 +16,6 @@ import model.Karyawan;
  */
 public class KaryawanDAO {
     private final Gson gson = new Gson();
-    // READ (Get All Karyawan)
     public List<Karyawan> getAll() {
         try {
             String jsonResponse = SupabaseClient.get("/karyawan");
@@ -27,7 +26,6 @@ public class KaryawanDAO {
             return null;
         }
     }
-    // CREATE (Insert Karyawan Baru)
     public boolean insert(Karyawan karyawan) {
         try {
             karyawan.setIdKaryawan(null);
@@ -39,7 +37,6 @@ public class KaryawanDAO {
             return false;
         }
     }
-    // UPDATE (Edit Karyawan berdasarkan ID)
     public boolean update(Karyawan karyawan) {
         try {
             String id = karyawan.getIdKaryawan();
@@ -53,7 +50,6 @@ public class KaryawanDAO {
             return false;
         }
     }
-    // DELETE (Hapus Karyawan berdasarkan ID)
     public boolean delete(String id) {
         try {
             String endpoint = "/karyawan?id_karyawan=eq." + id;

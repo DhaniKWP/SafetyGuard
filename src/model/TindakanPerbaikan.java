@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs:
+ * Click nbfs:
  */
 package model;
 
@@ -28,7 +28,6 @@ public class TindakanPerbaikan {
         this.tanggal_selesai = tanggal_selesai;
         this.status_tindakan = status_tindakan;
     }
-    // Getter dan Setter
     public String getIdTindakan() { return id_tindakan; }
     public void setIdTindakan(String id_tindakan) { this.id_tindakan = id_tindakan; }
     public String getIdInsiden() { return id_insiden; }

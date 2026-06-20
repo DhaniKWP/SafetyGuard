@@ -20,7 +20,7 @@ public class PanelLaporan extends JPanel {
     private static final Color ACCENT_GREEN = new Color(16, 185, 129);
     private static final Color ACCENT_ORANGE= new Color(245, 158, 11);
     private static final Color BORDER_COLOR = new Color(203, 213, 225);
-    private static final Color TEXT_WHITE  = new Color(15, 23, 42); // Reused constant name
+    private static final Color TEXT_WHITE  = new Color(15, 23, 42);
     private static final Color TEXT_MUTED  = new Color(100, 116, 139);
 
     private Pengguna loggedInUser;
@@ -28,7 +28,6 @@ public class PanelLaporan extends JPanel {
     private JTextField txtTanggalAwal;
     private JTextField txtTanggalAkhir;
 
-    // Kartu modul laporan
     private final String[][] MODUL_DATA = {
         {"Laporan Insiden K3",       "Data insiden & status investigasi",   "Laporan Insiden"},
         {"Tindakan Perbaikan (CAPA)","Tindakan korektif & preventif CAPA",  "Tindakan CAPA"},
@@ -44,7 +43,6 @@ public class PanelLaporan extends JPanel {
     }
 
     private void initUI() {
-        // ===== HEADER =====
         JPanel headerPanel = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
@@ -52,7 +50,6 @@ public class PanelLaporan extends JPanel {
                 GradientPaint gp = new GradientPaint(0, 0, new Color(226, 232, 240), getWidth(), 0, BG_CARD);
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
-                // Garis bawah
                 g2d.setColor(BORDER_COLOR);
                 g2d.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
                 g2d.dispose();
@@ -77,27 +74,24 @@ public class PanelLaporan extends JPanel {
         titleBox.add(lblSub);
         headerPanel.add(titleBox, BorderLayout.CENTER);
 
-        // ===== KONTEN UTAMA =====
         JPanel contentPanel = new JPanel(new BorderLayout(0, 20));
         contentPanel.setOpaque(false);
         contentPanel.setBorder(new EmptyBorder(24, 28, 24, 28));
 
-        // -- Baris 1: Grid Kartu Modul --
         JPanel gridPanel = new JPanel(new GridLayout(1, 4, 14, 0));
         gridPanel.setOpaque(false);
 
         Color[] cardColors = {
-            new Color(59, 130, 246),   // Biru - Insiden
-            new Color(245, 158, 11),   // Oranye - CAPA
-            new Color(16, 185, 129),   // Hijau - Inspeksi
-            new Color(168, 85, 247),   // Ungu - APD
+            new Color(59, 130, 246),
+            new Color(245, 158, 11),
+            new Color(16, 185, 129),
+            new Color(168, 85, 247),
         };
 
         for (int i = 0; i < MODUL_DATA.length; i++) {
             gridPanel.add(createModulCard(MODUL_DATA[i], cardColors[i]));
         }
 
-        // -- Baris 2: Panel Pilihan & Ekspor --
         JPanel actionPanel = createActionPanel();
 
         contentPanel.add(gridPanel, BorderLayout.NORTH);
@@ -106,7 +100,6 @@ public class PanelLaporan extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
 
-        // Footer
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));
         footer.setOpaque(false);
         footer.setBorder(new EmptyBorder(0, 0, 12, 0));
@@ -118,17 +111,14 @@ public class PanelLaporan extends JPanel {
     }
 
     private JPanel createModulCard(String[] data, Color accentColor) {
-        // data: [namaModul, deskripsi, labelPendek]
         JPanel card = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setColor(BG_CARD);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                // Garis atas berwarna accent
                 g2d.setColor(accentColor);
                 g2d.fillRoundRect(0, 0, getWidth(), 4, 4, 4);
-                // Border
                 g2d.setColor(BORDER_COLOR);
                 g2d.setStroke(new BasicStroke(1f));
                 g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
@@ -178,7 +168,6 @@ public class PanelLaporan extends JPanel {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Judul bagian
         JLabel lblSectionTitle = new JLabel("Konfigurasi Ekspor");
         lblSectionTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblSectionTitle.setForeground(TEXT_WHITE);
@@ -190,7 +179,6 @@ public class PanelLaporan extends JPanel {
         gbc.gridy = 1;
         panel.add(sep, gbc);
 
-        // Baris Label + Dropdown
         JLabel lblPilih = new JLabel("Jenis Laporan:");
         lblPilih.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblPilih.setForeground(TEXT_MUTED);
@@ -209,7 +197,6 @@ public class PanelLaporan extends JPanel {
         gbc.gridx = 1; gbc.weightx = 1.0;
         panel.add(cbJenisLaporan, gbc);
 
-        // Filter Periode
         JLabel lblPeriode = new JLabel("Rentang Tanggal:");
         lblPeriode.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblPeriode.setForeground(TEXT_MUTED);
@@ -256,7 +243,6 @@ public class PanelLaporan extends JPanel {
             if(date != null && !date.isEmpty()) txtTanggalAkhir.setText(date);
         });
         
-        // Tombol Reset
         JButton btnReset = new JButton("X");
         btnReset.setPreferredSize(new Dimension(40, 38));
         btnReset.setBackground(new Color(239, 68, 68));
@@ -272,7 +258,6 @@ public class PanelLaporan extends JPanel {
         pnlPeriode.add(lblTo);
         pnlPeriode.add(txtTanggalAkhir);
         pnlPeriode.add(btnCalAkhir);
-        // pnlPeriode.add(btnReset); // Opsional jika muat, tapi kita letakkan di sebelahnya saja
         
         JPanel pnlWrapper = new JPanel(new BorderLayout(5, 0));
         pnlWrapper.setOpaque(false);
@@ -282,7 +267,6 @@ public class PanelLaporan extends JPanel {
         gbc.gridx = 1; gbc.weightx = 1.0;
         panel.add(pnlWrapper, gbc);
 
-        // Baris Tombol Ekspor
         JLabel lblFormat = new JLabel("Format Output:");
         lblFormat.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblFormat.setForeground(TEXT_MUTED);
@@ -305,7 +289,6 @@ public class PanelLaporan extends JPanel {
         gbc.gridx = 1;
         panel.add(btnPanel, gbc);
 
-        // Info keterangan
         JLabel lblInfo = new JLabel("Catatan: PDF mencakup kop surat, ringkasan eksekutif, dan kolom tanda tangan.");
         lblInfo.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblInfo.setForeground(new Color(100, 116, 139));
@@ -361,7 +344,6 @@ public class PanelLaporan extends JPanel {
         return match;
     }
 
-    // ====== LOGIKA EKSPOR PDF ======
     private void exportToPDF(String jenisLaporan) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
@@ -492,7 +474,6 @@ public class PanelLaporan extends JPanel {
         }
     }
 
-    // ====== LOGIKA EKSPOR CSV ======
     private void exportToCSV(String jenisLaporan) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {

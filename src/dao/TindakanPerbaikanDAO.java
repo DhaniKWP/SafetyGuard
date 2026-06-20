@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs:
+ * Click nbfs:
  */
 package dao;
 
@@ -29,7 +29,7 @@ public class TindakanPerbaikanDAO {
     }
     public boolean insert(TindakanPerbaikan tindakan) {
         try {
-            tindakan.setIdTindakan(null); // Biar di-generate otomatis oleh Supabase
+            tindakan.setIdTindakan(null);
             String jsonPayload = gson.toJson(tindakan);
             return SupabaseClient.post("/tindakan_perbaikan", jsonPayload);
         } catch (Exception e) {

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class PanelApd extends PanelBase {
 
-    private static final Color ACCENT = new Color(168, 85, 247); // Ungu
+    private static final Color ACCENT = new Color(168, 85, 247);
 
     private Pengguna loggedInUser;
     private DefaultTableModel modelApd;
@@ -50,7 +50,6 @@ public class PanelApd extends PanelBase {
         javax.swing.table.TableRowSorter<DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(modelApd);
         mainTable.setRowSorter(sorter);
 
-        // Renderer kondisi APD
         mainTable.getColumnModel().getColumn(5).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);

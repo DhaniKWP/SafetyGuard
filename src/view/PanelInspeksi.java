@@ -13,7 +13,7 @@ import java.util.List;
 
 public class PanelInspeksi extends PanelBase {
 
-    private static final Color ACCENT = new Color(16, 185, 129); // Hijau
+    private static final Color ACCENT = new Color(16, 185, 129);
 
     private Pengguna loggedInUser;
     private DefaultTableModel modelInspeksi;
@@ -50,7 +50,6 @@ public class PanelInspeksi extends PanelBase {
         javax.swing.table.TableRowSorter<DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(modelInspeksi);
         mainTable.setRowSorter(sorter);
 
-        // Renderer kolom Skor
         mainTable.getColumnModel().getColumn(5).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);

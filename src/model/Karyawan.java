@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs:
+ * Click nbfs:
  */
 package model;
 
@@ -23,7 +23,6 @@ public class Karyawan {
         this.jabatan = jabatan;
         this.sertifikasi_k3 = sertifikasi_k3;
     }
-    // Getter dan Setter
     public String getIdKaryawan() { return id_karyawan; }
     public void setIdKaryawan(String id_karyawan) { this.id_karyawan = id_karyawan; }
     public String getNamaLengkap() { return nama_lengkap; }

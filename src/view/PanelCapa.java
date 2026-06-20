@@ -15,7 +15,7 @@ import java.util.List;
 
 public class PanelCapa extends PanelBase {
 
-    private static final Color ACCENT = new Color(245, 158, 11); // Oranye
+    private static final Color ACCENT = new Color(245, 158, 11);
 
     private Pengguna loggedInUser;
     private DefaultTableModel modelCapa;

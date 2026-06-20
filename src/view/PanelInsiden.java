@@ -11,7 +11,7 @@ import java.util.List;
 
 public class PanelInsiden extends PanelBase {
 
-    private static final Color ACCENT = new Color(239, 68, 68); // Merah
+    private static final Color ACCENT = new Color(239, 68, 68);
 
     private Pengguna loggedInUser;
     private DefaultTableModel modelInsiden;
@@ -36,24 +36,20 @@ public class PanelInsiden extends PanelBase {
         };
         mainTable.setModel(modelInsiden);
 
-        // Lebar kolom
         int[] widths = {45, 110, 130, 120, 260, 130};
         for (int i = 0; i < widths.length; i++) {
             mainTable.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
 
-        // Double-click untuk edit
         mainTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2 && mainTable.getSelectedRow() != -1) showFormEditInsiden();
             }
         });
 
-        // Row sorter
         javax.swing.table.TableRowSorter<DefaultTableModel> sorter = new javax.swing.table.TableRowSorter<>(modelInsiden);
         mainTable.setRowSorter(sorter);
 
-        // Custom renderer untuk kolom Status dengan warna
         mainTable.getColumnModel().getColumn(5).setCellRenderer(new StatusBadgeRenderer());
     }
 
@@ -239,7 +235,6 @@ public class PanelInsiden extends PanelBase {
         }
     }
 
-    // Renderer badge warna untuk kolom Status
     static class StatusBadgeRenderer extends javax.swing.table.DefaultTableCellRenderer {
         @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
             JLabel lbl = (JLabel) super.getTableCellRendererComponent(t, v, sel, foc, r, c);
